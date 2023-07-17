@@ -1,0 +1,32 @@
+Package: rsdm
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.0.0.9000
+Authors@R: person("Ian", "Ondo", email = "iondo@kew.org", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7816-5882"))
+Description: What the package does (one paragraph).
+License: What license it uses
+Encoding: UTF-8
+LazyData: true
+ByteCompile: true
+Imports: 
+    rgeos,
+    ROCR,
+    magrittr,
+    dismo,
+    spatialrisk,
+    rgbif,
+    BIEN,
+    stars,
+    lwgeom,
+    taxize,
+    CoordinateCleaner
+RoxygenNote: 7.2.3
+Depends:
+    AlphaHullRangeModeller,
+    TDWG,
+    R (>= 2.10)
+Remotes: johnbaums/rmaxent, IanOndo/Rgeodata, IanOndo/AlphaHullRangeModeller, IanOndo/TDWG
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
