@@ -1,6 +1,6 @@
 ## If the OS is Windows, set mclapply to the hackish version. Otherwise, leave the definition alone.
 mclapply <- switch( Sys.info()[['sysname']],
-                    Windows = {UsefulPlants::mclapply.hack},
+                    Windows = {rsdm::mclapply.hack},
                     Linux   = {parallel::mclapply},
                     Darwin  = {parallel::mclapply})
 
@@ -224,7 +224,7 @@ mclapply(list.species, function(j){
 
               dplyr::filter(is.na(year) | year >= CUTOFF_YEAR)
 
-            if(nrow(clean)==0) return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 2. Remove cultivated specimens
@@ -234,7 +234,7 @@ mclapply(list.species, function(j){
             #   dplyr::filter(is.na(is_cultivated_observation) | is_cultivated_observation == "Yes"
             #                 & is.na(basisOfRecord) | basisOfRecord!= "Cultivated habitat")
             #
-            # if(nrow(clean)==0) return(NULL)
+            # if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 3. Remove un-misgeoreferenced specimens
@@ -248,7 +248,7 @@ mclapply(list.species, function(j){
               # Occurences with impossible lat-long coordinates
               dplyr::filter(decimalLatitude < 90 | decimalLatitude > -90 | decimalLongitude < 180 | decimalLongitude > -180)
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 4. Remove coordinates with large uncertainty in m
@@ -257,7 +257,7 @@ mclapply(list.species, function(j){
 
               dplyr::filter(coordinateUncertaintyInMeters <= CUTOFF_COORD_UNCERTAINTY | is.na(coordinateUncertaintyInMeters))
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 5. Remove coordinates with no decimal place (rounded)
@@ -317,7 +317,7 @@ mclapply(list.species, function(j){
             #
             #   CoordinateCleaner::cc_coun(iso3='countryCode', ref=NULL, verbose=verbose)
             #
-            # if(nrow(clean)==0) return(NULL)
+            # if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 10. Clean records with country and province centroids
@@ -326,7 +326,7 @@ mclapply(list.species, function(j){
 
               CoordinateCleaner::cc_cen(buffer = BUFFER_CENT, geod=TRUE, test='both', species='species', ref=NULL, verify=FALSE, verbose=verbose)
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 11. Clean records in country capitals
@@ -335,7 +335,7 @@ mclapply(list.species, function(j){
 
               CoordinateCleaner::cc_cap(buffer = BUFFER_CAP, geod=TRUE, species='species', ref=NULL, verify=FALSE, verbose=verbose)
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 12. Clean records with institutional coordinates
@@ -344,7 +344,7 @@ mclapply(list.species, function(j){
 
               CoordinateCleaner::cc_inst(buffer = BUFFER_INST, geod=TRUE, species='species', verify=FALSE, verify_mltpl = 10, verbose=verbose)
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #---------------------------------------------------------
             ##= 13. Clean records with GBIF HQ coordinates
@@ -353,7 +353,7 @@ mclapply(list.species, function(j){
 
               CoordinateCleaner::cc_gbif(buffer = BUFFER_GBIF_HQ, geod=TRUE, species='species', verify=FALSE, verbose=verbose)
 
-            if(nrow(clean)==0) stop('No more available information in the dataset') #return(NULL)
+            if(nrow(clean)==0) stop('No more available information in the dataset')
 
             #=========================================================
             ##

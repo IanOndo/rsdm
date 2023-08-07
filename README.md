@@ -1,1 +1,26 @@
 # rsdm
+
+`rsdm` is a package designed to help streamlining species distribution analyses for large-scale assessments of biodiversity patterns. The package contains a set of helper functions to facilitate the collation and curation of species occurrence data, the building and assessment of species distribution models, the projection and the mapping of the geographic range of species and biodiversity patterns. It is also equipped with experimental wrapper functions for developing modelling pipelines and thus processing large quantities of data simultaneously.
+
+## *Installation*
+
+Make sure to have [*R*](https://cloud.r-project.org/ "R") or [*Rstudio*](https://rstudio.com/products/rstudio/download/ "Rstudio") installed on your machine. Some R packages need to be compiled from source, so if you are on Windows, you need to install [*Rtools*](http://cran.r-project.org/bin/windows/Rtools/) too.\\
+
+Install *rsdm* with the following instructions. If the package `devtools` is not already installed run `install.packages("devtools")` in your console. Setting `R_REMOTES_NO_ERRORS_FROM_WARNINGS="false` will cause warning messages during calls to `devtools::install_github` to become errors. So beforehand, make sure to set this environmental variable to `true` via:
+
+``` r
+Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
+```
+
+Then, install and load the package:
+
+``` r
+devtools::install_github("IanOndo/rsdm")
+library(rsdm)
+```
+
+## *Vignettes*
+
+-   Data gathering and (pre-)processing
+-   Modelling species distribution
+-   Mapping species

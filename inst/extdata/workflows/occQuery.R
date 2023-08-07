@@ -1,8 +1,8 @@
 ## If the OS is Windows, set mclapply to the hackish version. Otherwise, leave the definition alone.
 mclapply <- switch( Sys.info()[['sysname']],
-                    Windows = {mclapply.hack},
-                    Linux   = {mclapply},
-                    Darwin  = {mclapply})
+                    Windows = {rsdm::mclapply.hack},
+                    Linux   = {parallel::mclapply},
+                    Darwin  = {parallel::mclapply})
 
 #====================================================================
 #== 0. Get parameters from command-line
@@ -94,7 +94,7 @@ if(doFormatting){
   cat('\n\n')
   commandArgs <- function(...) paste0(intersect(names(need_formatting)[need_formatting], c('biotime','rainbio', 'genesys','spLink','cwr_gbif')))
   assign('commandArgs',commandArgs,envir=.GlobalEnv)
-  source(system.file("extdata/UsefulPlants_workflow/dbFormat.R",package='UsefulPlants'))
+  source(system.file("extdata/UsefulPlants_workflow/dbFormat.R",package='rsdm'))
 }else{
   cat('...No need to format required databases now...')
 }

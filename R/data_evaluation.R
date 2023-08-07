@@ -415,7 +415,7 @@ train_Maxent <- function(loc_dat,
     list(threads=4, pictures=FALSE, warnings = FALSE)))
 
   # train the best model
-  model_trained <- suppressWarnings(do.call(UsefulPlants::maxent, model.args))
+  model_trained <- suppressWarnings(do.call(maxent, model.args))
 
   if(inherits(model_trained,"try-error")){
     cat(model_trained)
@@ -438,7 +438,7 @@ train_Maxent <- function(loc_dat,
 
 #'                                 Train geographic model
 #'
-#' Calibrate and Evaluate a geographic model using interpoint distance-based algorithm
+#' Calibrate and evaluate a geographic model using interpoint distance-based algorithm
 #'
 #' @param loc_dat A two-column matrix,a data.frame, a data.table or a csv file with longitude and latitude coordinates of occurrence records.
 #' @param algorithm A character string specifying the name of the algorithm to use. Default is `idw` i.e. Inverse-Distance Weighted.
@@ -589,7 +589,7 @@ train_geoModel <- function(loc_dat,
 #' @param k A numeric integer specifying the number of bins required.
 #' @param coordHeaders A character string vector of length two giving the names of the coordinates in \code{loc_dat}
 #' @param bg_masks A RasterStack object of the background to be partitionned.
-#' @param species_name [Optional] A character string specifying the name of species. If \code{NULL}, will be set to `Unknown`.
+#' @param species_name [Optional] A character string specifying the name of the species. If \code{NULL}, will be set to `Unknown`.
 #' @param maxent_settings A list of maxent flags.
 #' @param eval_metrics A vector of evaluation metric names. Evaluation metrics available are: `auc`, `omission_rate`,`tss`, `ic`.
 #' @param do.mask A logical
@@ -753,7 +753,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
   cv_output <- tryCatch({
 
-    foreach::foreach(j=1:k, .packages=c("UsefulPlants","rmaxent","dplyr"), .combine=rbind) %dopar% {
+    foreach::foreach(j=1:k, .packages=c("rsdm","rmaxent","dplyr"), .combine=rbind) %dopar% {
 
     #--------------------------
     #= a. get the training data
@@ -798,7 +798,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       training_block0[training_block0==0] <- NA
 
       training_bg <-try({
-        names(env_bg) <- UsefulPlants::strip_extension(names(env_bg))
+        names(env_bg) <- strip_extension(names(env_bg))
         env_bg %>%
           as("Raster") %>%
           setNames(stars::st_dimensions(env_bg0)$band$values) %>%
@@ -811,7 +811,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
     else if(env_dir_flag){
 
       env_bg0 <- try(env_dat %>%
-                      UsefulPlants::read_layers(),silent=TRUE)
+                      read_layers(),silent=TRUE)
       if(inherits(env_bg0,"try-error")){
         cat(env_bg0)
         stop("Unable to read environmental raster layers.")
@@ -819,7 +819,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
       training_bg <-try({
 
-        names(env_bg0) <- if(any(is.na(UsefulPlants::strip_extension(names(env_bg0)))))  names(env_bg0) else UsefulPlants::strip_extension(names(env_bg0))
+        names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
 
         if(inherits(env_bg0,"stars")){
 
@@ -916,7 +916,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
         split("band") %>%
         setNames(stars::st_dimensions(env_bg0)$band$values)
       testing_loc <- testing_loc %>%
-        dplyr::bind_cols(UsefulPlants::map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
+        dplyr::bind_cols(map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
         na.omit()
     }else{
       testing_loc <- testing_loc %>%
@@ -1027,7 +1027,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
                                   list(threads=ncores, pictures=FALSE, warnings = FALSE)))
 
     # train the model
-    model_trained <- try(do.call(UsefulPlants::maxent, cv.model.args),silent=TRUE)
+    model_trained <- try(do.call(maxent, cv.model.args),silent=TRUE)
 
    if(inherits(model_trained,"try-error")){
      cat(model_trained)
@@ -1035,7 +1035,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
    }
 
     # get the outputs
-    model_output <- UsefulPlants::get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
+    model_output <- get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
 
     if("ic" %in% eval_metrics){
       if(inherits(training_bg,"stars")){
@@ -1069,20 +1069,20 @@ block_cv_maxent <- function(loc_dat, env_dat,
     if(varying_parameter){
 
       # get the previous command line
-      old_command_line <- UsefulPlants::get_maxent_command_line(file.path(outputdir_path[1],"maxent.log"))
+      old_command_line <- get_maxent_command_line(file.path(outputdir_path[1],"maxent.log"))
 
       for(i in 2:length(maxent_settings[[varying_parameter_name]])){
 
         # change output directory
         new_output_directory <- outputdir_path[i]
-        new_command_line <- UsefulPlants::set_command_param(old_command_line, "outputdirectory", new_output_directory)
+        new_command_line <- set_command_param(old_command_line, "outputdirectory", new_output_directory)
 
         # change parameter value
-        new_command_line <- UsefulPlants::set_command_param(new_command_line, varying_parameter_name, maxent_settings[[varying_parameter_name]][i])
+        new_command_line <- set_command_param(new_command_line, varying_parameter_name, maxent_settings[[varying_parameter_name]][i])
 
         # run the model
         mem <- if("memory_allocated" %in% maxent_settings) maxent_settings$memory_allocated else 512
-        new_command_line <- UsefulPlants::set_command_arg(new_command_line, "density.MaxEnt", paste0('-mx',mem,'m',' -jar ',cv.model.args$path_to_maxent))
+        new_command_line <- set_command_arg(new_command_line, "density.MaxEnt", paste0('-mx',mem,'m',' -jar ',cv.model.args$path_to_maxent))
         system(new_command_line)
 
         if("ic" %in% eval_metrics){
@@ -1107,14 +1107,14 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
           model_output %<>%
             dplyr::bind_rows(
-            UsefulPlants::get_maxent_output(new_output_directory, eval_metrics=eval_metrics, index=j) %>%
+            get_maxent_output(new_output_directory, eval_metrics=eval_metrics, index=j) %>%
             dplyr::bind_cols(as.data.frame(subset(IC, select=c("k","ll","AIC","AICc","BIC"))))
             )
 
         }else{
           # get the output
           model_output %<>%
-            dplyr::bind_rows(UsefulPlants::get_maxent_output(new_output_directory,eval_metrics=eval_metrics, index=j))
+            dplyr::bind_rows(get_maxent_output(new_output_directory,eval_metrics=eval_metrics, index=j))
         }
 
       }
@@ -1182,7 +1182,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
         training_block0[training_block0==0] <- NA
 
         training_bg <-try({
-          names(env_bg) <- UsefulPlants::strip_extension(names(env_bg))
+          names(env_bg) <- strip_extension(names(env_bg))
           env_bg %>%
             as("Raster") %>%
             setNames(stars::st_dimensions(env_bg0)$band$values) %>%
@@ -1195,7 +1195,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       }
       else if(env_dir_flag){
         env_bg0 <- try(env_dat %>%
-                        UsefulPlants::read_layers(),silent=TRUE)
+                        read_layers(),silent=TRUE)
 
         if(inherits(env_bg0,"try-error")){
           cat(env_bg0)
@@ -1203,7 +1203,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
         }
 
         training_bg <-try({
-          names(env_bg0) <- if(any(is.na(UsefulPlants::strip_extension(names(env_bg0)))))  names(env_bg0) else UsefulPlants::strip_extension(names(env_bg0))
+          names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
 
           if(inherits(env_bg0,"stars")){
 
@@ -1301,7 +1301,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
           split("band") %>%
           setNames(stars::st_dimensions(env_bg0)$band$values)
         testing_loc <- testing_loc %>%
-          dplyr::bind_cols(UsefulPlants::map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
+          dplyr::bind_cols(map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
           na.omit()
       }else{
         testing_loc <- testing_loc %>%
@@ -1412,7 +1412,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
         list(threads=ncores, pictures=FALSE, warnings = FALSE)))
 
       # train the model
-      model_trained <- try(do.call(UsefulPlants::maxent, cv.model.args),silent=TRUE)
+      model_trained <- try(do.call(maxent, cv.model.args),silent=TRUE)
 
       if(inherits(model_trained,"try-error")){
         cat(model_trained)
@@ -1420,7 +1420,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       }
 
       # get the outputs
-      model_output <- UsefulPlants::get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
+      model_output <- get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
 
       if("ic" %in% eval_metrics){
         if(inherits(training_bg,"stars")){
@@ -1454,25 +1454,24 @@ block_cv_maxent <- function(loc_dat, env_dat,
       if(varying_parameter){
 
         # get the previous command line
-        old_command_line <- UsefulPlants::get_maxent_command_line(file.path(outputdir_path[1],"maxent.log"))
+        old_command_line <- get_maxent_command_line(file.path(outputdir_path[1],"maxent.log"))
 
         for(i in 2:length(maxent_settings[[varying_parameter_name]])){
 
           # change output directory
           new_output_directory <- outputdir_path[i]
-          new_command_line <- UsefulPlants::set_command_param(old_command_line, "outputdirectory", new_output_directory)
+          new_command_line <- set_command_param(old_command_line, "outputdirectory", new_output_directory)
 
           # change parameter value
-          new_command_line <- UsefulPlants::set_command_param(new_command_line, varying_parameter_name, maxent_settings[[varying_parameter_name]][i])
+          new_command_line <- set_command_param(new_command_line, varying_parameter_name, maxent_settings[[varying_parameter_name]][i])
 
           # run the model
           mem <- if("memory_allocated" %in% maxent_settings) maxent_settings$memory_allocated else 512
-          new_command_line <- UsefulPlants::set_command_arg(new_command_line, "density.MaxEnt", paste0('-mx',mem,'m',' -jar ',cv.model.args$path_to_maxent))
+          new_command_line <- set_command_arg(new_command_line, "density.MaxEnt", paste0('-mx',mem,'m',' -jar ',cv.model.args$path_to_maxent))
           system(new_command_line)
 
 
           if("ic" %in% eval_metrics){
-            #rst <- raster::stack(lapply(1:length(training_bg), function(l) as(training_bg[l], "Raster")))
             lbds <- list.files(new_output_directory, pattern="\\.lambdas",full.names=TRUE)
             if(length(lbds)==0L)
               warning("Unable to find lambdas file in directory ", new_output_directory)
@@ -1493,14 +1492,14 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
             model_output %<>%
               dplyr::bind_rows(
-                UsefulPlants::get_maxent_output(new_output_directory, eval_metrics=eval_metrics, index=j) %>%
+                get_maxent_output(new_output_directory, eval_metrics=eval_metrics, index=j) %>%
                   dplyr::bind_cols(as.data.frame(subset(IC, select=c("k","ll","AIC","AICc","BIC"))))
               )
 
           }else{
             # get the output
             model_output %<>%
-              dplyr::bind_rows(UsefulPlants::get_maxent_output(new_output_directory,eval_metrics=eval_metrics, index=j))
+              dplyr::bind_rows(get_maxent_output(new_output_directory,eval_metrics=eval_metrics, index=j))
           }
 
         }
@@ -1587,63 +1586,11 @@ calc_omission_rate <- function(model,  occ_train, occ_test, threshold = 10) {
   return(om_rate)
 }
 
-#' utility function: map function that transforms input by applying a function to each element and returning
-#' a data frame with a number of columns equal to the number of element in the input.
-#' @export
-map_lfd <- function(x, fun, ...){
-  num_index <- length(x)
-  ret <- lapply(1:num_index, FUN=function(i) fun(`[`(x,i)), ...)
-  res <- as.data.frame(do.call(cbind, ret))
-  names(res) <- names(x)
-  res
-}
 
-#' utility function: read multiple raster layers from a directory.
-#' @param path A character string specifying the path to the directory where the raster layers are stored
-#' @param nlayers A numeric integer specifying the number of layers to read. Default is all layers.
-#' @export
-read_layers <- function(path, nlayers=NULL){
-
-  if(!dir.exists(path))
-    stop("Unable to find directory ",path,".")
-
-  # Regular expression to check for rasters layer with different formats
-  layer_formats <- "(*.grd$)|(*.asc$)|(*.bil$)|(*.sdat$)|(*.rst$)|(*.tif$)|(*.envi$)|(*.img$)|(*hdr.adf$)"
-  list_layers <- list.files(path, pattern = layer_formats, full.names = TRUE, recursive=TRUE)
-
-  if(length(list_layers)==0L)
-    stop("No raster layers found in directory ",path)
-
-  if(is.null(nlayers))
-    nlayers = length(list_layers)
-
-  # try with stars
-  layers <- try(stars::read_stars(head(list_layers, nlayers)),silent=TRUE)
-
-  if(inherits(layers,"try-error")){
-
-    layers <- lapply(head(list_layers, nlayers), raster::raster) %>%
-      raster::stack()
-
-    if(inherits(layers,"try-error")){
-      cat(layers)
-      stop("Unable to read raster layers. See error message.")
-    }
-  }
-
-  return(layers)
-}
-
-#' utility function: strip raster layers file extension.
-#' @export
-strip_extension <- function(fn){
-  stringr::str_extract(fn, ".+?(?=\\.[a-z]{3}$)")
-}
-
-#' utility function: read multiple raster layers from a directory.
+#' utility function: selects the best model based off a set of evaluation metrics.
 #' @param model_output A dataframe object returned by the function \code{block_cv_maxent}.
 #' @param eval_metrics A vector of evaluation metric names. Evaluation metrics available are: `auc`, `omission_rate`,`tss`, `ic`.
-#' @param tolerance A numeric integer specifying the number of decimals to account for when comparing performance metrics. Default is 3.
+#' @param tolerance A numeric integer specifying the number of decimals to account for when comparing performance metrics. Default is 3 digits.
 #' @export
 get_best_maxent_model <- function(model_output, eval_metrics, tolerance=3){
 

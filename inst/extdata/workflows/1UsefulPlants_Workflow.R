@@ -1,6 +1,6 @@
 ## If the OS is Windows, set mclapply to the hackish version. Otherwise, leave the definition alone.
 mclapply <- switch( Sys.info()[['sysname']],
-                    Windows = {UsefulPlants::mclapply.hack},
+                    Windows = {rsdm::mclapply.hack},
                     Linux   = {parallel::mclapply},
                     Darwin  = {parallel::mclapply})
 
@@ -25,7 +25,7 @@ for(arg in args) {
 
          'force_sorting' = {FORCE_SORTING = as.logical(gsub(".+?(?<=\\=)","",arg,perl=TRUE))},
 
-         'which_uses'    = {RUN_NAME = WHICH_USE = gsub(".+?(?<=\\=)","",arg,perl=TRUE)},
+         'run_name'    = {RUN_NAME = gsub(".+?(?<=\\=)","",arg,perl=TRUE)},
 
          'points_proj' 		= {POINTS_PROJ = paste0("+",gsub(".+?(?<=\\=\\+)","",arg,perl=TRUE))},
 
@@ -39,12 +39,16 @@ cat('\n')
 cat('#====================================================================\n')
 cat('#== 1. Setup directories\n')
 cat('#====================================================================\n\n')
+# < 3 cells => points directory
+# 10 > # of cells >= 3 cells => geographic distance-based directory
+# >= 10 cells => SDM directory
+
 xyOnly = FALSE
 if(exists("ENV_DIR")){
-  init_main_directories(base_directory=BASE_DIR, species_directory=SPECIES_DIR, env_directory=ENV_DIR, force_sorting=FORCE_SORTING, ncores=MC_CORES)
+  rsdm::init_main_directories(base_directory=BASE_DIR, species_directory=SPECIES_DIR, env_directory=ENV_DIR, force_sorting=FORCE_SORTING, ncores=MC_CORES)
 }else{
   xyOnly = TRUE
-  init_main_directories(base_directory=BASE_DIR, species_directory=SPECIES_DIR, force_sorting=FORCE_SORTING, ncores=MC_CORES)
+  rsdm::init_main_directories(base_directory=BASE_DIR, species_directory=SPECIES_DIR, force_sorting=FORCE_SORTING, ncores=MC_CORES)
 }
 cat('\n\n')
 
@@ -67,24 +71,6 @@ if(!xyOnly){
 cat('#====================================================================\n')
 cat('#== 3. Prepare species occurrence data\n')
 cat('#====================================================================\n\n')
-
-# cat('#--------------------------------------------------------------------\n')
-# cat('### 3.a sort species by number of occurrence records\n')
-# cat('#--------------------------------------------------------------------\n')
-# Sort species according to algorithms to be used. The function check the remaining number of sites/cells after cleaning (i.e. number of sites/cells where the species occur after spatial filtering)
-# The spatial filtering distance is 20km (i.e. minimum distance between records is 20km)
-# < 2 cells => points directory
-# < 3 cells => bounding box directory
-# < 10 cells => convex hull directory
-# 20 > # of cells > 10  => SDM10_20
-# > 20 cells => SDM
-#
-# cat('\n\n')
-#
-# cat('#--------------------------------------------------------------------\n')
-# cat('### 3.a specify which species to run\n')
-# cat('#--------------------------------------------------------------------\n')
-
 
 # List of species to run with MaxEnt algorithm
 if(!xyOnly){
@@ -121,14 +107,13 @@ if(!xyOnly){
   cat('>...Setting up parameters for the models...')
 
   maxent_settings <- list(
-    path_to_maxent="C:/Users/io03kg/Desktop/MAXENT/maxent/maxent.jar",
+    path_to_maxent=system.file('java/maxent.jar',package="dismo"),
     visible=FALSE,
     writemess=FALSE,
     writebackgroundpredictions=TRUE,
     maximumbackground=50000,
     betamultiplier=c(1,2,6,10),
-    biasfile="E:/maxent_test/samplingBias/bias_file_masked_cte.tif",
-    #togglelayerselected="hfp_v2geo_prj_fill",
+    biasfile= system.file("exdata","sdm_biasfile.asc",package="UsefulPlants"),
     prefixes=FALSE,
     threshold=FALSE,
     hinge=TRUE,
@@ -136,7 +121,7 @@ if(!xyOnly){
     outputgrids=FALSE
   )
 
-  geographic_distance_algorithm = "idw"
+  geographic_distance_algorithm = ifelse(!exists("GEO_ALGO"), "idw", GEO_ALGO)
   geographic_grid_resolution = 0.1666667
 
   cat('OK\n')
@@ -148,7 +133,7 @@ if(!xyOnly){
 
   cat('>...Setting up parameters for the models...')
 
-  geographic_distance_algorithm = "idw"
+  geographic_distance_algorithm = ifelse(!exists("GEO_ALGO"), "idw", GEO_ALGO)
   geographic_grid_resolution = 0.1666667
 
   cat('OK\n')
@@ -201,7 +186,7 @@ runs <-mclapply(speciesList, function(j){
   # OPTIONS #
   ###########
   memory.limit(90000)	# Increase size memory allocated
-  raster::rasterOptions(chunksize = 2e+05, maxmemory = 2e+07, todisk=FALSE)#, tmpdir = "E:/R_garbage")
+  raster::rasterOptions(chunksize = 2e+05, maxmemory = 2e+07, todisk=FALSE)
 
   algo = speciesAlgo[match(j, speciesList)]
 
@@ -209,16 +194,16 @@ runs <-mclapply(speciesList, function(j){
 
     switch(algo,
 
-     maxent = UsefulPlants::run_maxentModel(loc_dat = j,
+     maxent = rsdm::run_maxentModel(loc_dat = j,
                                               species_name = k,
                                               outputdir = file.path(BASE_DIR,"envModels","maxent"),
-                                              #newdata="E:/maxent_test/newdata",
                                               do.map=TRUE,
                                               maxent_settings = maxent_settings,
+                                              grid_res =grid_res = max(0.008333335, geographic_grid_resolution/2),
                                               varying_parameter_name="betamultiplier",
                                               verbose=TRUE),
 
-     geo_dist = UsefulPlants::run_geoModel(loc_dat = j,
+     geo_dist = rsdm::run_geoModel(loc_dat = j,
                                              species_name = k,
                                              algorithm = geographic_distance_algorithm,
                                              outputdir = file.path(BASE_DIR,"geoModels","geo_dist"),
@@ -226,7 +211,7 @@ runs <-mclapply(speciesList, function(j){
                                              project_res = geographic_grid_resolution,
                                              verbose = TRUE),
 
-     point = UsefulPlants::run_pointModel(loc_dat = j,
+     point = rsdm::run_pointModel(loc_dat = j,
                                             species_name = k,
                                             outputdir = file.path(BASE_DIR,"pointModels","point"),
                                             project_res = geographic_grid_resolution,
@@ -237,12 +222,12 @@ runs <-mclapply(speciesList, function(j){
   if(inherits(out,'try-error')){
     cat(out)
     gc()
-    raster::removeTmpFiles(h=5)
+    raster::removeTmpFiles(h=72)
     j
   }
   gc()
-  raster::removeTmpFiles(h=5)
-}, mc.cores=MC_CORES)
+  raster::removeTmpFiles(h=72)
+}, mc.cores=MC_CORES, mc.preschedule = FALSE)
 finished.at = Sys.time()
 time.elapsed <- finished.at - started.at
 cat('...End of computations...\n\n')

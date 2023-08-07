@@ -159,39 +159,67 @@ decimalnumcount<-Vectorize(function(x){
 #' @export
 min.col <- function(m, ...) max.col(-m,...)
 
-#' From Lon/Lat to UTM zone
-#'
-#' Converts coordinates from longitude/latitude to UTM zone
-#'
-#' @param longitude A numeric vector of longitude coordinates in decimal degrees
-#' @param latitude A numeric vector of latitude coordinates in decimal degrees
-#' @return A numeric vector specifying the UTM zone the coordinates belong to.
+
+#' helper function that split a vector x in n chunks of approximatively equal size
 #' @export
-LL2UTMZone <- function(longitude, latitude, add_latitude_band=FALSE) {
+chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))
 
-  if(add_latitude_band){
 
-    #  band letters
-    band <- LETTERS[3:24]
-    band <- band[!band %in% c("I","O")] # letters "I" and "0" are skipped
-
-    # horizontal bands spanning 8 degrees of latitude
-    brks <- seq(from=-80, to=84, by=8)
-    brks[length(brks)] <- 84 # band 'X' spans 12 degree
-
-    latitude_band <- as.character(cut(latitude, breaks=brks, labels=band))
-  }
-
-  # Special zones for Svalbard and Norway
-  if(latitude >= 72.0 && latitude < 84.0 )
-    if (longitude >= 0.0  && longitude <  9.0)
-      return(if(add_latitude_band) paste0(31,latitude_band) else 31);
-  if (longitude >= 9.0  && longitude < 21.0)
-    return(if(add_latitude_band) paste0(33,latitude_band) else 33)
-  if (longitude >= 21.0 && longitude < 33.0)
-    return(if(add_latitude_band) paste0(35,latitude_band) else 35)
-  if (longitude >= 33.0 && longitude < 42.0)
-    return(if(add_latitude_band) paste0(37,latitude_band) else 37)
-
-  if(add_latitude_band) paste0( (floor((longitude + 180) / 6) %% 60) + 1, latitude_band) else (floor((longitude + 180) / 6) %% 60) + 1
+#' utility function: map function that transforms input by applying a function to each element and returning
+#' a data frame with a number of columns equal to the number of element in the input.
+#' @export
+map_lfd <- function(x, fun, ...){
+  num_index <- length(x)
+  ret <- lapply(1:num_index, FUN=function(i) fun(`[`(x,i)), ...)
+  res <- as.data.frame(do.call(cbind, ret))
+  names(res) <- names(x)
+  res
 }
+
+
+#' utility function: strip filename extension.
+#' @export
+strip_extension <- function(fn){
+  stringr::str_extract(fn, ".+?(?=\\.[a-z]{3}$)")
+}
+
+
+#'              Most frequent value(s)
+#'
+#' Find the most frequent n value(s) from a vector
+#'
+#' @param x A vector
+#' @param n A numeric integer specifying the number of values to return. Default is 1, i.e. the most frequent value.
+#' @param ... Additional parameters to be passed to the function \code{table}.
+#' @seealso \code{table}
+#' @export
+modal <- function(x, n=1, ...){
+  sort(table(x,...),decreasing=TRUE)[1:n]
+}
+
+
+
+#' Remove temporary raster files
+#' @export
+removeTMPFiles <- function(h=24) {
+
+  # remove files in the temp folder that are > h hours old
+  warnopt <- getOption('warn')
+  on.exit(options('warn'= warnopt))
+
+  tmpdir <- raster::tmpDir(create=FALSE)
+  if (!is.na(tmpdir)) {
+
+    d <- raster:::.removeTrailingSlash(tmpdir)
+    f <- list.files(path=d, pattern='r_tmp*', full.names=TRUE, include.dirs=TRUE)
+    #		f <- list.files(path=d, pattern='[.]gr[di]', full.names=TRUE, include.dirs=TRUE)
+    fin <- file.info(f)
+    dif <- Sys.time() - fin$mtime
+    dif <- as.numeric(dif, units="hours")
+
+    f <- f[which(dif > h)]
+    unlink(f, recursive=TRUE)
+  }
+  options('warn'=warnopt)
+}
+

@@ -105,7 +105,7 @@ run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL,
 
     newdata <-try({
 
-      names(env_bg0) <- if(any(is.na(UsefulPlants::strip_extension(names(env_bg0)))))  names(env_bg0) else UsefulPlants::strip_extension(names(env_bg0))
+      names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
 
       if(inherits(env_bg0,"stars")){
 

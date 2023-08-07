@@ -1,0 +1,896 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\usepackage{tcolorbox}
+
+\definecolor{mybluebackground}{HTML}{d9edf7}
+\definecolor{mybluecolor}{HTML}{31708f}
+\definecolor{myblueborder}{HTML}{bce8f1}
+\definecolor{mybrownbackground}{HTML}{fcf8e3}
+\definecolor{mybrowncolor}{HTML}{8a6d3b}
+\definecolor{mybrownborder}{HTML}{faebcc}
+
+\newtcolorbox{infobox}{
+  colback=mybluebackground,
+  colframe=myblueborder,
+  coltext=mybluecolor,
+  boxsep=3pt,
+  boxrule=2pt,
+  arc=4pt}
+
+\newtcolorbox{warningbox}{
+  colback=mybrownbackground,
+  colframe=mybrownborder,
+  coltext=mybrowncolor,
+  boxsep=3pt,
+  boxrule=2pt,
+  arc=4pt}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\floatplacement{figure}{H}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Modelling species distribution},
+  pdfauthor={Ian Ondo},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Modelling species distribution}
+\author{Ian Ondo}
+\date{2023-05-22}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\begin{warningbox}
+
+\textbf{Package notes:}\\
+We need to install the following set of R packages to successfully run
+the codes in this vignette:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{geodata} (Hijmans et al. 2023)
+\item
+  \textbf{dismo} (Hijmans et al. 2021)
+\item
+  \textbf{usdm} (Naimi et al. 2014)
+\item
+  \textbf{ade4} (Dray, Dufour, and Chessel 2007)
+\item
+  \textbf{ggplot2} (Wickham 2016)
+\item
+  \textbf{kableExtra} (Zhu 2023)
+\item
+  \textbf{dplyr} (Wickham et al. 2023)
+\end{itemize}
+
+\end{warningbox}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+In this vignette, we will focus on modelling the distribution of
+\emph{Abies spectabilis} (hereafter \emph{A. spectabilis}) with the
+\href{https://github.com/IanOndo/UsefulPlants}{\textbf{\textcolor{black}{\underline{UsefulPlants}}}}
+package. We will walk through the modelling process and introduce key
+functions and R codes used to assist each individual steps.
+
+\hypertarget{i.-data-preparation}{%
+\section{I. Data preparation}\label{i.-data-preparation}}
+
+Our occurrence dataset contains 40 rows of occurrence locations of
+\emph{A. spectabilis} curated beforehand (see vignette
+\href{}{\textbf{\textcolor{black}{\underline{Data gathering and pre-processing}}}}.
+The first few rows look like this:
+
+\begin{table}[H]
+
+\caption{\label{tab:head-occurrence-table}Occurrence dataset of \textit{A. spectabilis}}
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}[t]{lcclcc}
+\toprule
+species & decimalLongitude & decimalLatitude & year & countryCode & basisOfRecord\\
+\midrule
+Abies spectabilis & 88.45 & 27.55 & ** & IND & PRESERVED\_SPECIMEN\\
+Abies spectabilis & 88.85 & 27.47 & ** & CHN & PRESERVED\_SPECIMEN\\
+Abies spectabilis & 85.29 & 28.85 & 1975 & CHN & PRESERVED\_SPECIMEN\\
+Abies spectabilis & 88.90 & 27.48 & 1975 & CHN & PRESERVED\_SPECIMEN\\
+Abies spectabilis & 87.12 & 28.65 & 1959 & CHN & PRESERVED\_SPECIMEN\\
+\addlinespace
+Abies spectabilis & 87.76 & 28.36 & 1975 & CHN & PRESERVED\_SPECIMEN\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}\textit{Note: }}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Only relevant columns are shown}\\
+\end{tabular}}
+\end{table}
+
+For simplicity, we are going to use the R package \textbf{geodata} to
+obtain a set of environmental layers. Various climate, elevation and
+soil-related raster datasets can be directly downloaded from R with this
+package.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(geodata)}
+
+\CommentTok{\# setup a (temporary) directory to store your environmental raster layers}
+\NormalTok{my\_env\_tmp\_dir }\OtherTok{=} \FunctionTok{tempdir}\NormalTok{()}
+
+\CommentTok{\# spatial resolution}
+\NormalTok{my\_res }\OtherTok{=} \DecValTok{10} \CommentTok{\# 10 minutes degree resolution}
+
+\CommentTok{\# download global dataset of WorldClim bioclimatic variables }
+\NormalTok{wc }\OtherTok{=}\NormalTok{ geodata}\SpecialCharTok{::}\FunctionTok{worldclim\_global}\NormalTok{(}\AttributeTok{var=}\StringTok{"bio"}\NormalTok{,}
+                               \AttributeTok{res=}\NormalTok{my\_res,}
+                               \AttributeTok{path =}\NormalTok{ my\_env\_tmp\_dir)}
+
+\CommentTok{\# download global dataset of SRTM elevation model}
+\NormalTok{alt }\OtherTok{=}\NormalTok{ geodata}\SpecialCharTok{::}\FunctionTok{elevation\_global}\NormalTok{(}\AttributeTok{res=}\NormalTok{my\_res,}
+                                \AttributeTok{path =}\NormalTok{ my\_env\_tmp\_dir)}
+
+\CommentTok{\# download the human footprint index}
+\NormalTok{hfp }\OtherTok{=}\NormalTok{ geodata}\SpecialCharTok{::}\FunctionTok{footprint}\NormalTok{(}\AttributeTok{year =} \DecValTok{2009}\NormalTok{,}
+                   \AttributeTok{path =}\NormalTok{ my\_env\_tmp\_dir)}
+
+\CommentTok{\# uncomment below to download soil{-}related variable, but be mindful,}
+\CommentTok{\# global downloads at 30 seconds resolution take a while !}
+\CommentTok{\#}
+\CommentTok{\# download global dataset of soil organic carbon and pH at 30{-}60cm depth}
+\CommentTok{\# soc = geodata::soil\_world(var="soc",depth=60, path=my\_env\_tmp\_dir)}
+\CommentTok{\# pH = geodata::soil\_world(var="phh2o", depth=60, path=my\_env\_tmp\_dir)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{defining-the-training-area}{%
+\subsection{\texorpdfstring{\emph{Defining the training
+area}}{Defining the training area}}\label{defining-the-training-area}}
+
+We need to delineate the geographic area in which we will train our
+model. This training area should ideally represent the environmental
+conditions available or accessible to the species. In
+\textbf{UsefulPlants}, it extends to the boundaries of the biomes or
+ecoregions where species' occurrence locations were found. We are going
+to use the function \texttt{make\_geographic\_domain} which relies on
+\emph{Terrestrial Ecoregions Of the World} (TEOW) and some user-defined
+settings to create the training area from our occurrence data points.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\FunctionTok{library}\NormalTok{(UsefulPlants)}
+
+\CommentTok{\# create your training area}
+\NormalTok{my\_training\_area }\OtherTok{\textless{}{-}} \FunctionTok{make\_geographic\_domain}\NormalTok{(}
+  
+  \CommentTok{\# path to the occurrence records file}
+  \AttributeTok{loc\_dat=}\NormalTok{params}\SpecialCharTok{$}\NormalTok{occ\_file, }
+  
+  \CommentTok{\# optional vector of longitude/latitude}
+  \AttributeTok{coordHeaders =} \FunctionTok{c}\NormalTok{(}\StringTok{"decimalLongitude"}\NormalTok{,}\StringTok{"decimalLatitude"}\NormalTok{), }
+  
+  \CommentTok{\# build alpha{-}hull from the set of points}
+  \AttributeTok{do.alpha\_hull =} \ConstantTok{TRUE}\NormalTok{, }
+  
+  \CommentTok{\# do not dissolve borders between polygons (i.e. biomes or ecoregions)}
+  \AttributeTok{dissolve =} \ConstantTok{FALSE}\NormalTok{,}
+  
+  \CommentTok{\# build the alpha{-}hull with at least 95\% of the points}
+  \AttributeTok{fraction =} \FloatTok{0.95}\NormalTok{, }
+  
+  \CommentTok{\# get biomes whose intersection area with the alpha{-}hull \textgreater{}= 10\% (of their area),}
+  \CommentTok{\# otherwise get ecoregions}
+  \AttributeTok{min\_area\_cover =} \FloatTok{0.1}\NormalTok{, }
+  
+  \CommentTok{\# get biomes with \textgreater{}= 10 points inside, otherwise get ecoregions}
+  \AttributeTok{min\_occ\_number =} \DecValTok{10}\NormalTok{,}
+  
+  \CommentTok{\# optional terrestrial land vector maps}
+  \AttributeTok{land\_file =}\NormalTok{ RGeodata}\SpecialCharTok{::}\NormalTok{terrestrial\_lands, }
+  
+  \CommentTok{\# run quietly. set to TRUE to display stepwise detailed information}
+  \AttributeTok{verbose=}\ConstantTok{FALSE} 
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{infobox}
+
+Internally, \texttt{make\_geographic\_domain}:
+
+\begin{itemize}
+\item
+  Built an alpha-hull around occurrence points (include at least 95\% of
+  points by default)
+\item
+  Detected biomes in the TEOW dataset that intersect with the alpha-hull
+\item
+  Made sure that these biomes include \textgreater= N points (default is
+  N=10) and that the intersection area with the alpha-hull \textgreater=
+  X\% (default is X=10\% of the biome area)
+\item
+  Made sure to include ecoregions of points excluded by the alpha-hull,
+  or geographic outliers if they exist.
+\end{itemize}
+
+\end{infobox}
+
+Let's have a look at the geographic region selected to be sure that it
+makes sense by overlaying our occurrence records on the map.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+ 
+  \CommentTok{\# plot the region selected and overlay your occurrence data points}
+\NormalTok{  mplt }\OtherTok{\textless{}{-}}\NormalTok{ my\_training\_area }\SpecialCharTok{\%\textgreater{}\%}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ggplot}\NormalTok{() }\SpecialCharTok{+}
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_sf}\NormalTok{(ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{fill =}\NormalTok{ REGION\_NAME)) }\SpecialCharTok{+}
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{data =}\NormalTok{ occ\_data, }
+\NormalTok{                        ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ decimalLongitude, }\AttributeTok{y =}\NormalTok{ decimalLatitude),}
+                        \AttributeTok{size =} \DecValTok{2}\NormalTok{,                                                }
+                        \AttributeTok{shape =} \DecValTok{4}\NormalTok{,                                              }
+                        \AttributeTok{fill =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+}                                       
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{labs}\NormalTok{(}\AttributeTok{fill =} \StringTok{"Biomes/Ecoregions"}\NormalTok{,) }\SpecialCharTok{+} 
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+} 
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{theme}\NormalTok{(}
+    \AttributeTok{text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{family=}\StringTok{"serif"}\NormalTok{),}
+    \AttributeTok{legend.title =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size=}\DecValTok{7}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{),}
+    \AttributeTok{legend.key.size =} \FunctionTok{unit}\NormalTok{(}\FloatTok{0.4}\NormalTok{,}\StringTok{\textquotesingle{}cm\textquotesingle{}}\NormalTok{),}
+    \AttributeTok{legend.text =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size=}\DecValTok{5}\NormalTok{),}
+    \AttributeTok{axis.text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{6}\NormalTok{),}
+    \AttributeTok{axis.title=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{8}\NormalTok{,}\AttributeTok{face=}\StringTok{"bold"}\NormalTok{)}
+\NormalTok{    ) }\SpecialCharTok{+}
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{xlab}\NormalTok{(}\StringTok{"Longitude"}\NormalTok{) }\SpecialCharTok{+}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ylab}\NormalTok{(}\StringTok{"Latitude"}\NormalTok{) }\SpecialCharTok{+} 
+\NormalTok{    ggplot2}\SpecialCharTok{::}\FunctionTok{scale\_fill\_hue}\NormalTok{(}\AttributeTok{l=}\DecValTok{40}\NormalTok{)}
+    
+\NormalTok{mplt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{warningbox}
+For this vignette, we intentionally displayed the biomes and ecoregions
+composing the training area of our species by setting
+\textbf{\texttt{dissolve=FALSE}}, however, for the rest of the analysis
+make sure to set \textbf{\texttt{dissolve=TRUE}} when creating your
+training area to merge all biomes and ecoregions into one geographic
+region.
+
+\end{warningbox}
+
+The region selected seems okay, but if not satisfied with it, try to
+change some parameters e.g.~\texttt{fraction}, \texttt{min\_area\_cover}
+or \texttt{min\_occ\_number} until you get the desired training area.
+
+\hypertarget{selecting-environmental-predictors}{%
+\subsection{\texorpdfstring{\emph{Selecting environmental
+predictors}}{Selecting environmental predictors}}\label{selecting-environmental-predictors}}
+
+First of all, the environmental rasters were downloaded at different
+spatial grain, extent or projection, so to
+\underline{ensure that all datasets spatially match}, we need to:
+
+\begin{itemize}
+\item
+  \textbf{clip} all layers to the training area previously defined to
+  speed up the computations.
+\item
+  \textbf{resample} all layers using the geographic information of a
+  raster taken as reference for the study area.
+\end{itemize}
+
+We use the function \texttt{maskCover} to clip the rasters. It does a
+better job to approximate the irregular shape of the training area by
+using the intersection of the entire grid cell with the training area
+polygon rather than the grid cell's centroid like other functions.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# clip climate data}
+\NormalTok{wc\_clipped }\OtherTok{=} \FunctionTok{maskCover}\NormalTok{(wc, my\_training\_area)}
+
+\CommentTok{\# clip elevation data}
+\NormalTok{alt\_clipped }\OtherTok{=} \FunctionTok{maskCover}\NormalTok{(alt, my\_training\_area)}
+
+\CommentTok{\# clip human footprint}
+\NormalTok{hfp\_clipped }\OtherTok{=} \FunctionTok{maskCover}\NormalTok{(hfp, my\_training\_area)}
+
+\CommentTok{\# resample elevation and human footprint layers using a bioclimatic layer as a reference raster}
+\NormalTok{alt\_resampled }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{resample}\NormalTok{(}
+\NormalTok{  alt\_clipped,}
+\NormalTok{  wc\_clipped[[}\DecValTok{1}\NormalTok{]],}
+  \AttributeTok{method =} \StringTok{"ngb"}  \CommentTok{\# keep discrete values}
+\NormalTok{)}
+
+\NormalTok{hfp\_resampled }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{resample}\NormalTok{(}
+\NormalTok{  hfp\_clipped,}
+\NormalTok{  wc\_clipped[[}\DecValTok{1}\NormalTok{]]}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Now, let's compute three more topography-related variables, the
+\emph{land slope (S)}, the \emph{Topographic Ruggedness Index (TRI)} and
+the \emph{terrain roughness (R)}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# compute S, TRI and R}
+\NormalTok{topo }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{terrain}\NormalTok{(alt\_resampled, }\AttributeTok{opt=}\FunctionTok{c}\NormalTok{(}\StringTok{"slope"}\NormalTok{,}\StringTok{"TRI"}\NormalTok{,}\StringTok{"roughness"}\NormalTok{))}
+
+\CommentTok{\# add to climate and human footprint layers}
+\NormalTok{env\_data }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{stack}\NormalTok{(wc\_clipped, hfp\_resampled, topo)}
+\end{Highlighting}
+\end{Shaded}
+
+Variable selection is not a linear process, one needs to balance
+statistical evidence with ecological meaning, and this usually entails
+going back and forth between different steps until finding a convincing
+set of variables.
+
+\begin{infobox}
+
+A good practice for selecting environmental predictors in plant studies,
+starts by gathering a large set of factors known to influence the
+physiological response of plants to environmental conditions such as
+factors related to nutrition (availability of water and nutrients) and
+energy (availability of light). Then, progressively removing redundant
+information (i.e.~factors highly correlated) while keeping:
+
+\begin{itemize}
+\item
+  direct factors over proxies
+\item
+  factors whose effects are easier to interpret
+\item
+  annual trend and seasonal effects over monthly extremes (for large
+  scale studies)
+\item
+  limiting factors and stress effects over maxima.
+\end{itemize}
+
+\end{infobox}
+
+There are many ways to do a variable selection, but here is one example,
+of what a variable selection may look like.
+
+\hypertarget{pca}{%
+\subsubsection{\texorpdfstring{\emph{PCA}}{PCA}}\label{pca}}
+
+We can start our selection by performing a Principal component Analysis
+(PCA) to identify variables that most drive the environmental conditions
+of our study area (variables contributing the most to the first axis of
+the PCA). This will give a first broad idea of which variables best
+describe our training area.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# keep the first two principal components (PC)}
+\NormalTok{ndim }\OtherTok{=} \DecValTok{2}
+
+\CommentTok{\# perform PCA}
+\NormalTok{pca }\OtherTok{\textless{}{-}}\NormalTok{ ade4}\SpecialCharTok{::}\FunctionTok{dudi.pca}\NormalTok{(}\AttributeTok{df=}\NormalTok{env\_data[],}
+                      \AttributeTok{center=} \ConstantTok{TRUE}\NormalTok{, }\CommentTok{\# (optional) remove the mean}
+                      \AttributeTok{scale=}\ConstantTok{TRUE}\NormalTok{,  }
+                      \AttributeTok{scannf=}\NormalTok{F, }\CommentTok{\# do not plot the screeplot}
+                      \AttributeTok{nf=}\NormalTok{ndim) }\CommentTok{\# nf is the number of dimensions}
+
+\CommentTok{\# Compute inertia explained by each of dimension}
+\NormalTok{inertia }\OtherTok{=}\NormalTok{ pca}\SpecialCharTok{$}\NormalTok{eig}\SpecialCharTok{/}\FunctionTok{sum}\NormalTok{(pca}\SpecialCharTok{$}\NormalTok{eig)}\SpecialCharTok{*}\DecValTok{100}
+\NormalTok{m }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{Comp=}\FunctionTok{paste0}\NormalTok{(}\StringTok{\textquotesingle{}Dim\textquotesingle{}}\NormalTok{,}\DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(inertia)), }\AttributeTok{inertia=}\NormalTok{inertia)}
+
+\CommentTok{\# plot eigenvalues}
+\NormalTok{bplt }\OtherTok{\textless{}{-}}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{m, ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{Comp, }\AttributeTok{y=}\NormalTok{inertia)) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =}\StringTok{"identity"}\NormalTok{, ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{fill=}\FunctionTok{as.factor}\NormalTok{(inertia)),}
+                    \AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_text}\NormalTok{(ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label=}\FunctionTok{paste0}\NormalTok{(}\FunctionTok{round}\NormalTok{(inertia,}\DecValTok{2}\NormalTok{),}\StringTok{"\%"}\NormalTok{),}
+                                  \AttributeTok{y=}\NormalTok{inertia}\FloatTok{+0.1}\NormalTok{, }\AttributeTok{fontface=}\StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{),}
+                                  \AttributeTok{vjust=}\DecValTok{0}\NormalTok{,}
+                                  \AttributeTok{color=}\StringTok{"black"}\NormalTok{,}
+                                  \AttributeTok{position =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{position\_dodge}\NormalTok{(}\DecValTok{1}\NormalTok{), }\AttributeTok{size=}\FloatTok{4.5}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{labs}\NormalTok{(}\AttributeTok{title=}\StringTok{"Barplot of Eigenvalues"}\NormalTok{,}
+                \AttributeTok{subtitle=}\FunctionTok{paste0}\NormalTok{(}\StringTok{"Using the first "}\NormalTok{,ndim,}\StringTok{" dimensions"}\NormalTok{),}
+                \AttributeTok{caption=}\FunctionTok{paste0}\NormalTok{(}\StringTok{"The two first coordinates (dimensions) explain "}\NormalTok{,}
+                               \FunctionTok{round}\NormalTok{(}\FunctionTok{sum}\NormalTok{(inertia[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{]),}\DecValTok{2}\NormalTok{),}\StringTok{"\% of the variability"}\NormalTok{)) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{theme}\NormalTok{(}
+    \AttributeTok{text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{family=}\StringTok{"serif"}\NormalTok{),}
+    \AttributeTok{plot.title =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{face=}\StringTok{"bold"}\NormalTok{, }\AttributeTok{size=}\DecValTok{14}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{0}\NormalTok{),}
+    \AttributeTok{axis.text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{12}\NormalTok{),}
+    \AttributeTok{axis.title=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{16}\NormalTok{,}\AttributeTok{face=}\StringTok{"bold"}\NormalTok{)}
+\NormalTok{  ) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{xlab}\NormalTok{(}\StringTok{"Dimensions"}\NormalTok{) }\SpecialCharTok{+}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ylab}\NormalTok{(}\StringTok{"Percentage of explained variances"}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette=}\StringTok{\textquotesingle{}Blues\textquotesingle{}}\NormalTok{) }\SpecialCharTok{+} 
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{scale\_x\_discrete}\NormalTok{(}\AttributeTok{limits=}\FunctionTok{paste0}\NormalTok{(}\StringTok{\textquotesingle{}Dim\textquotesingle{}}\NormalTok{,}\DecValTok{1}\SpecialCharTok{:}\NormalTok{ndim))}
+
+\NormalTok{bplt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Evaluation of the absolute contribution of a variable to an axis}
+\NormalTok{cont}\OtherTok{=}\NormalTok{ade4}\SpecialCharTok{::}\FunctionTok{inertia.dudi}\NormalTok{(pca,}\AttributeTok{col.inertia=}\ConstantTok{TRUE}\NormalTok{)}\SpecialCharTok{$}\NormalTok{col.abs}
+
+\CommentTok{\# Sort in decreasing order}
+\NormalTok{ctr}\OtherTok{=}\NormalTok{cont[}\FunctionTok{order}\NormalTok{(cont[,}\DecValTok{1}\NormalTok{],}\AttributeTok{decreasing=}\ConstantTok{FALSE}\NormalTok{),]}
+
+\DocumentationTok{\#\# Representation of the contribution of each variables to an axis x}
+\NormalTok{bplt\_axis\_1 }\OtherTok{\textless{}{-}}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{ctr, ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{Comp, }\AttributeTok{y=}\NormalTok{inertia)) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat =}\StringTok{"identity"}\NormalTok{, ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{fill=}\FunctionTok{as.factor}\NormalTok{(inertia)), }\AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{geom\_text}\NormalTok{(ggplot2}\SpecialCharTok{::}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label=}\FunctionTok{paste0}\NormalTok{(}\FunctionTok{round}\NormalTok{(inertia,}\DecValTok{2}\NormalTok{),}\StringTok{"\%"}\NormalTok{),}
+                                  \AttributeTok{y=}\NormalTok{inertia}\FloatTok{+0.1}\NormalTok{, }\AttributeTok{fontface=}\StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{),}
+                                  \AttributeTok{vjust=}\DecValTok{0}\NormalTok{,}
+                                  \AttributeTok{color=}\StringTok{"black"}\NormalTok{,}
+                                  \AttributeTok{position =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{position\_dodge}\NormalTok{(}\DecValTok{1}\NormalTok{), }\AttributeTok{size=}\FloatTok{4.5}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{labs}\NormalTok{(}\AttributeTok{title=}\StringTok{"Barplot of variables\textquotesingle{} contribution"}\NormalTok{,}
+                \AttributeTok{subtitle=}\FunctionTok{paste0}\NormalTok{(}\StringTok{"Using the first "}\NormalTok{,ndim,}\StringTok{" dimensions"}\NormalTok{),}
+                \AttributeTok{caption=}\FunctionTok{paste0}\NormalTok{(}\StringTok{"The two first coordinates (dimensions) explain "}\NormalTok{,}
+                               \FunctionTok{round}\NormalTok{(}\FunctionTok{sum}\NormalTok{(inertia[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{]),}\DecValTok{2}\NormalTok{),}\StringTok{"\% of the variability"}\NormalTok{)) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{theme}\NormalTok{(}
+    \AttributeTok{text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{family=}\StringTok{"serif"}\NormalTok{),}
+    \AttributeTok{plot.title =}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{face=}\StringTok{"bold"}\NormalTok{, }\AttributeTok{size=}\DecValTok{14}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{0}\NormalTok{),}
+    \AttributeTok{axis.text=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{12}\NormalTok{),}
+    \AttributeTok{axis.title=}\NormalTok{ggplot2}\SpecialCharTok{::}\FunctionTok{element\_text}\NormalTok{(}\AttributeTok{colour=}\StringTok{"black"}\NormalTok{, }\AttributeTok{size=}\DecValTok{16}\NormalTok{,}\AttributeTok{face=}\StringTok{"bold"}\NormalTok{)}
+\NormalTok{  ) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{xlab}\NormalTok{(}\StringTok{"Dimensions"}\NormalTok{) }\SpecialCharTok{+}\NormalTok{ ggplot2}\SpecialCharTok{::}\FunctionTok{ylab}\NormalTok{(}\StringTok{"\% of contribution"}\NormalTok{) }\SpecialCharTok{+}
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette=}\StringTok{\textquotesingle{}Blues\textquotesingle{}}\NormalTok{) }\SpecialCharTok{+} 
+\NormalTok{  ggplot2}\SpecialCharTok{::}\FunctionTok{scale\_x\_discrete}\NormalTok{(}\AttributeTok{limits=}\FunctionTok{paste0}\NormalTok{(}\StringTok{\textquotesingle{}Dim\textquotesingle{}}\NormalTok{,}\DecValTok{1}\SpecialCharTok{:}\NormalTok{ndim))}
+
+\NormalTok{bplt}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{collinearity}{%
+\subsubsection{\texorpdfstring{\emph{Collinearity}}{Collinearity}}\label{collinearity}}
+
+Then, we can decide to remove predictors highly correlated to others, by
+looking at the Variance Inflation Factor (VIF) of each predictor. In the
+literature, a VIF \textgreater{} 10 (or 5) usually indicate a
+collinearity issue. We use the package \textbf{usdm} which has two
+functions called \texttt{vifcor} and \texttt{vifstep} that implement
+different strategies to deal with collinearity among variables.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# detect collineary issues iteratively using a stepwise method}
+\NormalTok{vif\_step\_method }\OtherTok{\textless{}{-}}\NormalTok{ usdm}\SpecialCharTok{::}\FunctionTok{vifstep}\NormalTok{(env\_data,}
+             \AttributeTok{th =} \DecValTok{10}\NormalTok{, }\CommentTok{\# VIF threshold}
+             \AttributeTok{maxobservations=}\DecValTok{6000}\NormalTok{) }\CommentTok{\# maximum number of grid cells to sample}
+
+\CommentTok{\# detect collinearity issues using 2{-}by{-}2 correlations}
+\NormalTok{vif\_cor\_method }\OtherTok{\textless{}{-}}\NormalTok{ usdm}\SpecialCharTok{::}\FunctionTok{vifcor}\NormalTok{(env\_data,}
+             \AttributeTok{th =} \FloatTok{0.7}\NormalTok{, }\CommentTok{\# correlation threshold}
+             \AttributeTok{maxobservations=}\DecValTok{6000}\NormalTok{) }
+
+\CommentTok{\# select a method and exclude variables from the set of candidate predictors}
+\NormalTok{env\_data\_selected }\OtherTok{\textless{}{-}}\NormalTok{ usdm}\SpecialCharTok{::}\FunctionTok{exclude}\NormalTok{(env\_data, }\AttributeTok{vif=}\NormalTok{vif\_cor\_method)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{infobox}
+We removed collinearity among our environmental predictors by using the
+function \textbf{\texttt{vifcor}} which uses both VIF values and a
+correlation threshold. The function detects pairs of highly correlated
+variables (i.e.~with correlation \textgreater{} 0.7 for example), then
+excludes the variable of the pair with the highest VIF value.
+
+\end{infobox}
+
+\hypertarget{ii.-model-training-evaluation}{%
+\section{II. Model training \&
+evaluation}\label{ii.-model-training-evaluation}}
+
+We are going to train our model with the set of environmental predictors
+previously selected and the maximum entropy algorithm MaxEnt (Phillips,
+Anderson, and Schapire 2006).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# if you do not have it yet, download the last version of Maxent (3.4.1)}
+\CommentTok{\# It will be copied into the dismo/java folder}
+\NormalTok{success }\OtherTok{\textless{}{-}}\NormalTok{ rmaxent}\SpecialCharTok{::}\FunctionTok{get\_maxent}\NormalTok{(}\AttributeTok{quiet=}\ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{success }\CommentTok{\# if \textless{} 0, the download/copy failed.}
+\end{Highlighting}
+\end{Shaded}
+
+In \textbf{UsefulPlants}, MaxEnt is tuned and evaluated using the
+\emph{masked geographically structured approach} (Radosavljevic and
+Anderson 2014), which is a variant of the \emph{k-fold} cross-validation
+that provides a better ability to detect over-fitting.
+
+\hypertarget{data-partitioning}{%
+\subsection{\texorpdfstring{\emph{Data
+partitioning}}{Data partitioning}}\label{data-partitioning}}
+
+We use the function \texttt{make\_geographic\_block} to spatially
+segregate occurrence records into \emph{k=3} geographical bins with
+approximately the same number of points.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# (optional) rasterise the training area}
+\NormalTok{raster\_template  }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+\NormalTok{  raster}\SpecialCharTok{::}\FunctionTok{raster}\NormalTok{(my\_training\_area, }\AttributeTok{res =}\NormalTok{ grid\_res),}
+  \CommentTok{\# if any error occur, convert training area to \textquotesingle{}sp\textquotesingle{} object}
+  \AttributeTok{error=}\ControlFlowTok{function}\NormalTok{(err)\{}
+\NormalTok{    raster}\SpecialCharTok{::}\FunctionTok{raster}\NormalTok{(}\FunctionTok{as}\NormalTok{(my\_training\_area,}\StringTok{"Spatial"}\NormalTok{), }\AttributeTok{res =}\NormalTok{ grid\_res)}
+\NormalTok{    \}}
+\NormalTok{  )}
+\NormalTok{bg }\OtherTok{\textless{}{-}}\NormalTok{ fasterize}\SpecialCharTok{::}\FunctionTok{fasterize}\NormalTok{(sf}\SpecialCharTok{::}\FunctionTok{st\_cast}\NormalTok{(domain,}\StringTok{"MULTIPOLYGON"}\NormalTok{),}
+\NormalTok{                           raster\_template) }\SpecialCharTok{{-}} \DecValTok{1} \CommentTok{\# {-}1 to ensure background is a distinct block}
+
+\CommentTok{\# read occurrence data}
+\NormalTok{occ\_data }\OtherTok{=} \FunctionTok{read.csv}\NormalTok{(params}\SpecialCharTok{$}\NormalTok{occ\_file)}
+
+\CommentTok{\# define the number of geographic blocks to create}
+\NormalTok{K }\OtherTok{=} \DecValTok{3}
+
+\CommentTok{\# Partition both occurrence records and training area into K geographic blocks}
+\NormalTok{my\_geo\_blocks }\OtherTok{=} \FunctionTok{make\_geographic\_block}\NormalTok{(occ\_data, }\CommentTok{\# occurrence records data}
+                      \AttributeTok{k =}\NormalTok{ K,                    }\CommentTok{\# number of geographic blocks}
+                      \AttributeTok{bg =}\NormalTok{ bg,                  }\CommentTok{\# optional (i.e. can be left out)}
+                      \AttributeTok{grid\_res =} \FloatTok{0.1666667}\NormalTok{,     }\CommentTok{\# resolution in decimal lat/lon}
+                      \AttributeTok{sf=}\ConstantTok{TRUE}\NormalTok{,                  }\CommentTok{\# return a sf object}
+                      \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)            }\CommentTok{\# run quietly}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{infobox}
+
+Internally, \texttt{make\_geographic\_block}:
+
+\begin{itemize}
+\item
+  Used an unsupervised classification algorithm to cluster occurrence
+  points into equal group size given their geographic
+  coordinates/position
+\item
+  Built convex-hulls around each cluster
+\item
+  Made sure clusters do not overlap
+\end{itemize}
+
+\end{infobox}
+
+\hypertarget{model-tuning}{%
+\subsection{\texorpdfstring{\emph{Model
+tuning}}{Model tuning}}\label{model-tuning}}
+
+MaxEnt will be trained iteratively using \emph{k-1(=2)} bins and tested
+in the last bin. At each iteration, we will compute a range of
+evaluation metrics among: (i) the corrected Akaike Information criterion
+(\(AIC_c\)), (ii) the tenth percentile of the training omission rate
+(\(OR_{10}\)), the (iii) the Area Under the Curve of the receiver
+operating characteristic (AUC), and (iv) the maximum of the True Skill
+Statistics (TSS).
+
+We are going to repeat this procedure for a range of \(\beta\)
+regularization coefficients (hereafter called \(\beta\) multipliers) and
+select the model with the \(\beta\) multiplier that obtain the best
+overall performance given the evaluation metrics selected.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# create a vector of beta multipliers to explore}
+\NormalTok{beta\_mult }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{6}\NormalTok{,}\DecValTok{10}\NormalTok{)}
+
+\CommentTok{\# specify the evaluation metrics to compute}
+\NormalTok{eval\_metrics}\OtherTok{=}\FunctionTok{c}\NormalTok{(}\StringTok{"auc"}\NormalTok{,           }\CommentTok{\# AUC}
+               \StringTok{"omission\_rate"}\NormalTok{, }\CommentTok{\# OR10}
+               \StringTok{"tss"}\NormalTok{,           }\CommentTok{\# TSS}
+               \StringTok{"ic"}\NormalTok{)            }\CommentTok{\# AICc}
+
+\CommentTok{\# specify a folder where the model outputs will be written}
+\NormalTok{maxent\_output\_dir }\OtherTok{=} \FunctionTok{dirname}\NormalTok{(raster}\SpecialCharTok{::}\FunctionTok{rasterTmpFile}\NormalTok{())}
+  
+\CommentTok{\# create a list with maxent settings}
+\NormalTok{maxent\_settings }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}
+  \AttributeTok{path\_to\_maxent            =} \FunctionTok{system.file}\NormalTok{(}\StringTok{\textquotesingle{}java/maxent.jar\textquotesingle{}}\NormalTok{, }\AttributeTok{package=}\StringTok{\textquotesingle{}dismo\textquotesingle{}}\NormalTok{),}
+  \AttributeTok{visible                   =} \ConstantTok{FALSE}\NormalTok{,  }\CommentTok{\# hide MaxEnt GUI}
+  \AttributeTok{writemess                 =} \ConstantTok{FALSE}\NormalTok{,  }\CommentTok{\# do not write MESS raster}
+  \AttributeTok{writebackgroundpredictions=} \ConstantTok{TRUE}\NormalTok{,   }\CommentTok{\# write background predictions}
+  \AttributeTok{maximumbackground         =} \DecValTok{50000}\NormalTok{,  }\CommentTok{\# sample up to 50,000 background points}
+  \AttributeTok{betamultiplier            =}\NormalTok{ beta\_mult,}
+  \AttributeTok{eval\_metrics              =}\NormalTok{ eval\_metrics,}
+  \AttributeTok{prefixes                  =} \ConstantTok{FALSE}\NormalTok{,}
+  \AttributeTok{threshold                 =} \ConstantTok{FALSE}\NormalTok{,  }\CommentTok{\# do not use threshold feature class}
+  \AttributeTok{hinge                     =} \ConstantTok{TRUE}\NormalTok{,   }\CommentTok{\# use threshold feature class}
+  \AttributeTok{outputformat              =} \StringTok{\textquotesingle{}raw\textquotesingle{}}\NormalTok{,  }\CommentTok{\# keep raw outputs (no transformation)}
+  \AttributeTok{outputgrids               =} \ConstantTok{FALSE}   \CommentTok{\# do not write ascii grids}
+\NormalTok{)}
+
+\CommentTok{\# optionally compute a sampling bias prior layer to account for unevenly sampled}
+\CommentTok{\# locations within the study area}
+
+\CommentTok{\# get species coordinates (coordinates from higher taxonomic ranks or }
+\CommentTok{\# other related species can also be included)}
+\NormalTok{coords }\OtherTok{\textless{}{-}}\NormalTok{ occ\_data }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\FunctionTok{c}\NormalTok{(decimalLongitude, decimalLatitude))}
+
+\CommentTok{\# count number of points per grid cell}
+\NormalTok{rasterized\_occ }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{rasterize}\NormalTok{(coords,}
+\NormalTok{                                    bg,         }\CommentTok{\# rasterised training area}
+                                    \AttributeTok{update=}\ConstantTok{TRUE}\NormalTok{,}
+                                    \AttributeTok{fun=}\StringTok{\textquotesingle{}count\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\# detect grid cells with presence locations}
+\NormalTok{presences }\OtherTok{\textless{}{-}} \FunctionTok{which}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(raster}\SpecialCharTok{::}\FunctionTok{values}\NormalTok{(rasterized\_occ)) }\SpecialCharTok{\&}
+\NormalTok{                     raster}\SpecialCharTok{::}\FunctionTok{values}\NormalTok{(rasterized\_occ) }\SpecialCharTok{\textgreater{}}\NormalTok{ 0L)}
+\NormalTok{pres\_locs }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{coordinates}\NormalTok{(rasterized\_occ)[presences, ]}
+
+\CommentTok{\# compute density}
+\NormalTok{dens }\OtherTok{\textless{}{-}}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{kde2d}\NormalTok{(pres\_locs[,}\DecValTok{1}\NormalTok{], pres\_locs[,}\DecValTok{2}\NormalTok{],}
+                    \AttributeTok{n =} \FunctionTok{c}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(rasterized\_occ), }\FunctionTok{ncol}\NormalTok{(rasterized\_occ)),}
+                    \AttributeTok{h=}\DecValTok{2}\NormalTok{) }\CommentTok{\# bandwidth}
+\NormalTok{dens\_rast }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{raster}\NormalTok{(dens)}
+
+\CommentTok{\# make sure the raster matches the training area raster}
+\NormalTok{biasrast }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{resample}\NormalTok{(dens\_ras, bg, }\AttributeTok{method=}\StringTok{"ngb"}\NormalTok{)}
+
+\CommentTok{\# save to temporary folder}
+\NormalTok{sampbias\_fn }\OtherTok{\textless{}{-}} \FunctionTok{file.path}\NormalTok{(maxent\_output\_dir,}\StringTok{"sampbiasrast.tif"}\NormalTok{)}
+\NormalTok{bias\_rast }\OtherTok{\textless{}{-}} \FunctionTok{maskCover}\NormalTok{(biasrast, my\_training\_area, }\AttributeTok{filename=}\NormalTok{sampbias\_fn)}
+\CommentTok{\# rm(bias\_rast) if not needed anymore}
+
+\CommentTok{\# add the path to the sampling bias file to the list of settings for maxent}
+\NormalTok{maxent\_settings}\SpecialCharTok{$}\NormalTok{biasfile }\OtherTok{\textless{}{-}}\NormalTok{ sampbias\_fn}
+
+\CommentTok{\# perform the block cross{-}validation}
+\NormalTok{model\_output }\OtherTok{\textless{}{-}} \FunctionTok{block\_cv\_maxent}\NormalTok{(}
+                            \CommentTok{\# our occurrence dataset}
+                            \AttributeTok{loc\_dat =}\NormalTok{ occ\_data,}
+                                
+                            \CommentTok{\# raster stack of environmental predictors}
+                            \AttributeTok{env\_dat =}\NormalTok{ env\_data\_selected,}
+                            
+                            \CommentTok{\# number of blocks}
+                            \AttributeTok{k=}\NormalTok{K, }
+                            
+                            \CommentTok{\# optional coordinates headers}
+                            \AttributeTok{coordHeaders=}\FunctionTok{c}\NormalTok{(}\StringTok{"decimalLongitude"}\NormalTok{,}
+                                           \StringTok{"decimalLatitude"}\NormalTok{),}
+                            
+                            \CommentTok{\# our rasterised training area}
+                            \AttributeTok{bg\_masks =}\NormalTok{ my\_geo\_blocks,}
+                            
+                            \CommentTok{\# output directory}
+                            \AttributeTok{outputdir =}\NormalTok{ maxent\_output\_dir,}
+                            
+                            \CommentTok{\# (optional) species name}
+                            \AttributeTok{species\_name =} \StringTok{"Abies\_spectabilis"}\NormalTok{,}
+                            
+                            \CommentTok{\# list of settings for Maxent}
+                            \AttributeTok{maxent\_settings=}\NormalTok{maxent\_settings,}
+                            
+                            \CommentTok{\# name of the parameter that vary in maxent\_settings}
+                            \CommentTok{\# list}
+                            \AttributeTok{varying\_parameter\_name=}\StringTok{"betamultiplier"}\NormalTok{,}
+
+                            \CommentTok{\# disable parallel computing}
+                            \AttributeTok{do.parallel=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+The function \texttt{block\_cv\_maxent} returns a data.frame
+(\texttt{model\_output}) that reports the score of each evaluation
+metric within each bin tested. Let's have a look at this:
+
+Now, we can use the function \texttt{get\_best\_maxent\_model} to select
+the best overall model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{best\_model }\OtherTok{\textless{}{-}} \FunctionTok{get\_best\_maxent}\NormalTok{(model\_output, }\AttributeTok{eval\_metrics=}\NormalTok{eval\_metrics)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{infobox}
+
+Internally, \textbf{\texttt{get\_best\_maxent\_model}}:
+
+\begin{itemize}
+\item
+  Average evaluation metrics of each model across geographic bins
+\item
+  Sort the models from the lowest information criteria
+  \rightarrow lowest \(OR_{10}\) \rightarrow highest AUC
+  \rightarrow highest TSS.
+\end{itemize}
+
+\end{infobox}
+
+\hypertarget{iii.-model-projection}{%
+\section{III. Model projection}\label{iii.-model-projection}}
+
+Now that we determined the best \(\beta\) multiplier for our model, we
+can train it using the full dataset (i.e.~without withholding occurrence
+records) and project it across space.
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-ade4}{}}%
+Dray, Stéphane, Anne-Béatrice Dufour, and Daniel Chessel. 2007. {``The
+{ade4} Package -- {II}: Two-Table and {K}-Table Methods.''} \emph{R
+News} 7 (2): 47--52. \url{https://cran.r-project.org/doc/Rnews/}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-geodata}{}}%
+Hijmans, Robert J., Márcia Barbosa, Aniruddha Ghosh, and Alex Mandel.
+2023. \emph{Geodata: Download Geographic Data}.
+\url{https://CRAN.R-project.org/package=geodata}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-dismo}{}}%
+Hijmans, Robert J., Steven Phillips, John Leathwick, and Jane Elith.
+2021. \emph{Dismo: Species Distribution Modeling}.
+\url{https://CRAN.R-project.org/package=dismo}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-usdm}{}}%
+Naimi, Babak, Nicholas a.s. Hamm, Thomas A. Groen, Andrew K. Skidmore,
+and Albertus G. Toxopeus. 2014. {``Where Is Positional Uncertainty a
+Problem for Species Distribution Modelling.''} \emph{Ecography} 37:
+191--203. \url{https://doi.org/10.1111/j.1600-0587.2013.00205.x}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-MaxEntPhillips2006}{}}%
+Phillips, Steven J, Robert P Anderson, and Robert E Schapire. 2006.
+{``Maximum Entropy Modeling of Species Geographic Distributions.''}
+\emph{Ecological Modelling} 190 (3-4): 231--59.
+
+\leavevmode\vadjust pre{\hypertarget{ref-radosavljevic2014}{}}%
+Radosavljevic, Aleksandar, and Robert P Anderson. 2014. {``Making Better
+Maxent Models of Species Distributions: Complexity, Overfitting and
+Evaluation.''} \emph{Journal of Biogeography} 41 (4): 629--43.
+
+\leavevmode\vadjust pre{\hypertarget{ref-ggplot2}{}}%
+Wickham, Hadley. 2016. \emph{Ggplot2: Elegant Graphics for Data
+Analysis}. Springer-Verlag New York.
+\url{https://ggplot2.tidyverse.org}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-dplyr}{}}%
+Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis
+Vaughan. 2023. \emph{Dplyr: A Grammar of Data Manipulation}.
+\url{https://CRAN.R-project.org/package=dplyr}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-kableExtra}{}}%
+Zhu, Hao. 2023. \emph{kableExtra: Construct Complex Table with 'Kable'
+and Pipe Syntax}.
+
+\end{CSLReferences}
+
+\end{document}

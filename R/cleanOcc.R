@@ -10,32 +10,23 @@
 #' @param buffer_inst A numeric specifying the size of the buffer around each institution, where records should be ﬂagged as problematic. Default = 1 kilometre
 #' @param buffer_gbif_HQ A numeric specifying the size of the buffer around the gbif headquarters, where records should be ﬂagged as problematic. Default = 1 kilometre
 #' @param output_dir A directory where to save species occurrence records data after cleaning.
-#' @param use_TDWG A logical. Should the occurrences be cleaned by the TDWG regions. Default is \code{TRUE}.
+#' @param use_TDWG A logical. Should the TDWG package be used to clean the occurrence data ? Default is \code{TRUE}.
 #' @param species_id [OPTIONAL] A character string specifying the id of the species in ipni or Kew world checklist database. Only used if \code{use_TDWG=TRUE}.
 #' @param mc_core A numeric integer specifying the number of cores to be used for parallel computing. Should be >1 for parallel processing.
 #' @return None
 #' @export
-cleanOcc <- function(species_occ = system.file("extdata/UsefulPlants_workflow/Occ_dir/data_output", package='UsefulPlants'),
+cleanOcc <- function(species_occ = NULL,
                      cutoff_year = 1945,
                      cutoff_coord_uncertainty = 20000,
                      buffer_cent = 1000,
                      buffer_cap = 10000,
                      buffer_inst = 1000,
                      buffer_gbif_HQ = 1000,
-                     output_dir = system.file("extdata/Occ_dir/data_output", package='UsefulPlants'),
+                     output_dir = "",
                      use_TDWG = TRUE,
                      species_id = NULL,
                      mc_cores	= NULL)
 {
-  #----------------------------------------
-  #= 0.Load packages
-  #----------------------------------------
-  pkgs.to.load  <- c('CoordinateCleaner','dplyr')
-  pkgs.loaded   <- sapply(pkgs.to.load,require,character.only=TRUE)
-  if(!any(pkgs.loaded)){
-    warning(paste('Packages',paste(pkgs.to.load[!pkgs.loaded],collapse=', '),'failed to load'))
-    stop("Try to re-install packages that failed to load")
-  }
   #--------------------
   #= 1. Check inputs
   #--------------------
@@ -64,7 +55,7 @@ cleanOcc <- function(species_occ = system.file("extdata/UsefulPlants_workflow/Oc
 
   # check if cleaning by TDWG regions is possible
   if(use_TDWG & !requireNamespace("TDWG", quietly = TRUE)){
-    warning("Cleaning by TDWG region is not possible because the package 'TDWG' is not installed.")
+    warning("Cleaning by botanical region is not possible because the package 'TDWG' is not installed.")
     use_TDWG = FALSE
   }
 
@@ -130,5 +121,5 @@ cleanOcc <- function(species_occ = system.file("extdata/UsefulPlants_workflow/Oc
   #====================================================================
   commandArgs <- function(...) paste0(names(params),'=',params)
   assign('commandArgs',commandArgs,envir=.GlobalEnv)
-  source(system.file("extdata/UsefulPlants_workflow/occCleaning.R", package='UsefulPlants'))
+  source(system.file("extdata/workflows/occCleaning.R", package='rsdm'))
 }

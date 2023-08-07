@@ -1,0 +1,250 @@
+---
+title: "Cleaning species occurrence records"
+author: "Ian Ondo"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    toc: yes
+    keep_tex: yes
+    includes:
+      in_header: preamble.tex
+  html_document: null
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{booktabs}
+  - \usepackage{float}
+  - \usepackage{subcaption}
+  - \usepackage{caption}
+  - \floatplacement{figure}{H}
+
+fig_caption: yes
+keep_tex: yes
+vignette: >
+  %\VignetteIndexEntry{Cleaning species occurrence records}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  
+bibliography: my_bibtex.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.pos='H'
+)
+library(kableExtra)
+library(scales)
+library(tibble)
+options(knitr.kable.NA = '**')
+options("rgdal_show_exportToProj4_warnings"="none")
+```
+
+:::: {.warningbox data-latex=''}
+**Package notes:**  
+We need to install the following set of R packages to successfully run the codes in this vignette:
+
+- **CoordinateCleaner** [@CCleaner]
+- **rWCVP** [@rwcvp]
+- **dplyr** [@dplyr]
+::::
+
+# Introduction 
+Cleaning and filtering out data that look spurious or do not fit the purpose of a study is probably the most important step in any data science project. It is generally a good idea to start your data curation by applying general filters that would exclude observations that do not fit the scope of your study, such as records out of their expected spatial and temporal range. Then, apply more specific filters to refine your selection.  
+  
+In this vignette, we are going to use the World Checklist of Vascular Plants (WCVP) [@WCVP] distribution data and the R package  [**\textcolor{blue}{\underline{CoordinateCleaner}}**](https://cran.r-project.org/web/packages/CoordinateCleaner/CoordinateCleaner.pdf), to exclude occurrence locations outside of species known range and common georeferencing errors.
+
+# I. *Cleaning records outside of species range*
+Let's assume that 
+```{r data-cleaning-WCVP, eval=FALSE, include=TRUE}
+
+clean0 <- TDWG::rangeCleaner(mySpecies_occurrences,
+                   what='occurrences',
+                   working_dir=OUTPUT_DIR,
+                   status='both',
+                   initial_level=2,
+                   do.parallel=FALSE,
+                   use_name_matching=FALSE,
+                   full_data = TRUE,
+                   verbose=FALSE)
+
+```
+
+# II. *Cleaning unfit and mis-georefenced records*
+We use metadata information kept from our primary downloads (see vignette *\underline{Data gathering and pre-processing}*) to exclude locations:
+
+- collected before 1945
+- with coordinates out of their expected range (i.e. with Lat $\notin$ [-90,90] and Lon $\notin$ [-180,180])
+- with coordinates uncertainty <= 20km
+- with no decimal place (i.e. rounded)
+
+Then, **CoordinateCleaner** to exclude locations:
+
+- with zero coordinates
+- with identical latitude/longitude
+- within 10km buffer distance from centroids of countries, provinces, capitals or
+biodiversity institutions (museums, zoos, botanical gardens, universities)
+- within 1km buffer distance from the headquarters of GBIF
+
+```{r data-cleaning-ccleaner, eval=FALSE, include=TRUE}
+
+#---------------------------------------------------------
+##= 1. Remove records beyond a certain date
+#---------------------------------------------------------
+clean <- clean0 %>%
+  dplyr::filter(is.na(year) | year >= 1945)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 2. Remove cultivated specimens
+#---------------------------------------------------------
+# clean <- clean %>%
+#
+#   dplyr::filter(is.na(is_cultivated_observation) | is_cultivated_observation == "Yes"
+#                 & is.na(basisOfRecord) | basisOfRecord!= "Cultivated habitat")
+#
+# if(nrow(clean)==0) return(NULL)
+
+#---------------------------------------------------------
+##= 3. Remove (un/mis-)georeferenced specimens
+#---------------------------------------------------------
+clean <- clean %>%
+  dplyr::filter(!is.na(decimalLongitude)) %>%
+  dplyr::filter(!is.na(decimalLatitude)) %>%
+
+  # Occurences with impossible lat-long coordinates
+  dplyr::filter(decimalLatitude < 90 | decimalLatitude > -90 |
+                  decimalLongitude < 180 | decimalLongitude > -180)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 4. Remove coordinates with large uncertainty in m
+#---------------------------------------------------------
+clean <- clean %>%
+  dplyr::filter(coordinateUncertaintyInMeters <= 20000 |
+                  is.na(coordinateUncertaintyInMeters))
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 5. Remove coordinates with no decimal place (rounded)
+#---------------------------------------------------------
+clean <- clean %>%
+  dplyr::filter((decimalLongitude*10) %% 10 != 0) %>%
+  dplyr::filter((decimalLatitude*10) %% 10 != 0)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 6. Clean records whose individual counts are 0s
+#---------------------------------------------------------
+clean <- clean %>%
+  dplyr::filter(individualCount > 0 | is.na(individualCount)) %>%
+  dplyr::filter(individualCount < 99 | is.na(individualCount))
+
+if(nrow(clean)==0) stop('No more records available information in the dataset')
+
+#=========================================================
+##
+##=  Start CoordinateCleaner cleaning process
+##
+#=========================================================
+# Rename lon/lat fields
+clean <- clean %>%
+  dplyr::rename(decimallongitude = 'decimalLongitude',
+                decimallatitude = 'decimalLatitude')
+
+#---------------------------------------------------------
+##= 7. Clean records with 0 long and lat
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_zero(buffer = 0.5, verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 8. Clean records with equal latitude and longitude
+#      coordinates, either exact or absolute
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_equ(test = "absolute", verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 9. Clean records outside reported country
+#---------------------------------------------------------
+# clean <- clean %>%
+#
+#   CoordinateCleaner::cc_coun(iso3='countryCode', ref=NULL, verbose=FALSE)
+#
+# if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 10. Clean records with country and province centroids
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_cen(buffer = 10000,
+                            geod=TRUE,
+                            test='both',
+                            species='species',
+                            ref=NULL,
+                            verify=FALSE, 
+                            verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 11. Clean records in country capitals
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_cap(buffer = 10000,
+                            geod=TRUE,
+                            species='species',
+                            ref=NULL,
+                            verify=FALSE,
+                            verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 12. Clean records with institutional coordinates
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_inst(buffer = 10000,
+                             geod=TRUE,
+                             species='species',
+                             verify=FALSE,
+                             verify_mltpl = 10,
+                             verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#---------------------------------------------------------
+##= 13. Clean records with GBIF HQ coordinates
+#---------------------------------------------------------
+clean <- clean %>%
+  CoordinateCleaner::cc_gbif(buffer = 1000,
+                             geod=TRUE,
+                             species='species',
+                             verify=FALSE,
+                             verbose=FALSE)
+
+if(nrow(clean)==0) stop('No more records available in the dataset')
+
+#=========================================================
+##
+##=  End CoordinateCleaner cleaning process
+##
+#=========================================================
+# Rename lon/lat fields
+clean <- clean %>%
+  dplyr::rename(decimalLongitude = 'decimallongitude',
+                decimalLatitude = 'decimallatitude')
+
+```
+
+# References

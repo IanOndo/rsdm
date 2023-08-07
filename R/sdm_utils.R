@@ -1,26 +1,69 @@
-#' Remove temporary raster files
+
+#' utility function: read multiple raster layers from a directory.
+#' @param path A character string specifying the path to the directory where the raster layers are stored
+#' @param nlayers A numeric integer specifying the number of layers to read. Default is all layers.
 #' @export
-removeTMPFiles <- function(h=24) {
+read_layers <- function(path, nlayers=NULL){
 
-  # remove files in the temp folder that are > h hours old
-  warnopt <- getOption('warn')
-  on.exit(options('warn'= warnopt))
+  if(!dir.exists(path))
+    stop("Unable to find directory ",path,".")
 
-  tmpdir <- raster::tmpDir(create=FALSE)
-  if (!is.na(tmpdir)) {
+  # Regular expression to check for raster layers with different formats
+  layer_formats <- "(*.grd$)|(*.asc$)|(*.bil$)|(*.sdat$)|(*.rst$)|(*.tif$)|(*.envi$)|(*.img$)|(*hdr.adf$)"
+  list_layers <- list.files(path, pattern = layer_formats, full.names = TRUE, recursive=TRUE)
 
-    d <- raster:::.removeTrailingSlash(tmpdir)
-    f <- list.files(path=d, pattern='r_tmp*', full.names=TRUE, include.dirs=TRUE)
-    #		f <- list.files(path=d, pattern='[.]gr[di]', full.names=TRUE, include.dirs=TRUE)
-    fin <- file.info(f)
-    dif <- Sys.time() - fin$mtime
-    dif <- as.numeric(dif, units="hours")
+  if(length(list_layers)==0L)
+    stop("No raster layers found in directory ",path)
 
-    f <- f[which(dif > h)]
-    unlink(f, recursive=TRUE)
+  if(is.null(nlayers))
+    nlayers = length(list_layers)
+
+  # try with stars
+  layers <- try(stars::read_stars(head(list_layers, nlayers)),silent=TRUE)
+
+  if(inherits(layers,"try-error")){
+
+    layers <- lapply(head(list_layers, nlayers), raster::raster) %>%
+      raster::stack()
+
+    if(inherits(layers,"try-error")){
+      cat(layers)
+      stop("Unable to read raster layers. See error message.")
+    }
   }
-  options('warn'=warnopt)
+
+  return(layers)
 }
+
+#' Crop/mask raster with a spatial object while accounting for cell coverage
+#'
+#'
+#' crop then mask a raster object with a spatial shape while making sure that boundary cells in contact with the shape are not masked out
+#'
+#' @param x, A `Raster*` object
+#' @param y, A `Spatial*` object
+#' @return A `Raster*` object
+#' @export
+maskCover <- function(x, y, do.crop=TRUE, ...){
+
+  # check inputs
+  stopifnot(inherits(x,c("RasterLayer","RasterStack")))
+  stopifnot(inherits(y,c("SpatialPolygons","SpatialPolygonsDataFrame","SpatialLines","SpatialPoints")))
+
+  # first match the extent of the vector shape
+  if(do.crop)
+    stack_reference <- raster::crop(x, y)
+  else
+    stack_reference <- x
+
+  # then identify cells that at least partially overlap with the shape
+  mask_raster <- raster::rasterize(y, stack_reference[[1]], getCover=TRUE)
+
+  # finally mask out cells not overlapping with the shape
+  mask_raster[mask_raster==0] <- NA
+  raster::stack(raster::mask(stack_reference,mask=mask_raster,...))
+}
+
 
 #'              From meters to decimal degrees
 #'
@@ -52,20 +95,6 @@ meters2degrees <- function(x, dist, ...){
   return(list(degreeLat = degreeLat, degreeLon=degreeLon))
 }
 
-
-
-#'              Most frequent value(s)
-#'
-#' Find the most frequent n value(s) from a vector
-#'
-#' @param x A vector
-#' @param n A numeric integer specifying the number of values to return. Default is 1, i.e. the most frequent value.
-#' @param ... Additional parameters to be passed to the function \code{table}.
-#' @seealso \code{table}
-#' @export
-modal <- function(x, n=1, ...){
-  sort(table(x,...),decreasing=TRUE)[1:n]
-}
 
 #'              Remove hole(s)
 #' from https://stackoverflow.com/questions/52654701/removing-holes-from-polygons-in-r-sf
@@ -117,31 +146,40 @@ st_remove_holes <- function(x){
   return(x)
 }
 
-#' Crop/mask raster with a spatial object while accounting for cell coverage
+
+#' From Lon/Lat to UTM zone
 #'
+#' Converts coordinates from longitude/latitude to UTM zone
 #'
-#' crop then mask a raster object with a spatial shape while making sure that boundary cells in contact with the shape are not masked out
-#'
-#' @param x, A `Raster*` object
-#' @param y, A `Spatial*` object
-#' @return A `Raster*` object
+#' @param longitude A numeric vector of longitude coordinates in decimal degrees
+#' @param latitude A numeric vector of latitude coordinates in decimal degrees
+#' @return A numeric vector specifying the UTM zone the coordinates belong to.
 #' @export
-maskCover <- function(x, y, do.crop=TRUE, ...){
+LL2UTMZone <- function(longitude, latitude, add_latitude_band=FALSE) {
 
-  # check inputs
-  stopifnot(inherits(x,c("RasterLayer","RasterStack")))
-  stopifnot(inherits(y,c("SpatialPolygons","SpatialPolygonsDataFrame","SpatialLines","SpatialPoints")))
+  if(add_latitude_band){
 
-  # first match the extent of the vector shape
-  if(do.crop)
-    stack_reference <- raster::crop(x, y)
-  else
-    stack_reference <- x
+    #  band letters
+    band <- LETTERS[3:24]
+    band <- band[!band %in% c("I","O")] # letters "I" and "0" are skipped
 
-  # then identify cells that at least partially overlap with the shape
-  mask_raster <- raster::rasterize(y, stack_reference[[1]], getCover=TRUE)
+    # horizontal bands spanning 8 degrees of latitude
+    brks <- seq(from=-80, to=84, by=8)
+    brks[length(brks)] <- 84 # band 'X' spans 12 degree
 
-  # finally mask out cells not overlapping with the shape
-  mask_raster[mask_raster==0] <- NA
-  raster::stack(raster::mask(stack_reference,mask=mask_raster,...))
+    latitude_band <- as.character(cut(latitude, breaks=brks, labels=band))
+  }
+
+  # Special zones for Svalbard and Norway
+  if(latitude >= 72.0 && latitude < 84.0 )
+    if (longitude >= 0.0  && longitude <  9.0)
+      return(if(add_latitude_band) paste0(31,latitude_band) else 31);
+  if (longitude >= 9.0  && longitude < 21.0)
+    return(if(add_latitude_band) paste0(33,latitude_band) else 33)
+  if (longitude >= 21.0 && longitude < 33.0)
+    return(if(add_latitude_band) paste0(35,latitude_band) else 35)
+  if (longitude >= 33.0 && longitude < 42.0)
+    return(if(add_latitude_band) paste0(37,latitude_band) else 37)
+
+  if(add_latitude_band) paste0( (floor((longitude + 180) / 6) %% 60) + 1, latitude_band) else (floor((longitude + 180) / 6) %% 60) + 1
 }

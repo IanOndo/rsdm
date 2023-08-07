@@ -125,12 +125,9 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
 
   if(verbose) cat('> [...keep biomes with at least ',min_occ_number,' occurrence records inside...]\n')
 
-  # merge ecoregions into biomes
-  #biomes <- RGeodata::ecoregions %>% dplyr::group_by(BIOME_NAME) %>% dplyr::summarise()
-
-  num.point.by.biome <- suppressMessages(lengths(st_par_intersects(biomes, sf_loc_data, nchunks=100)))
+  num.point.by.biome <- suppressMessages(lengths(st_par_intersects(RGeodata:::biomes, sf_loc_data, nchunks=100)))
   # keep biomes with more than one occurrence records inside
-  biomes.with.more.than.n.point <- biomes[num.point.by.biome >= min_occ_number,]
+  biomes.with.more.than.n.point <- RGeodata:::biomes[num.point.by.biome >= min_occ_number,]
   if(verbose) cat('> [...extract polygons from biomes containing at least ',min_occ_number,' record(s) and intersecting with the alpha hull...]\n')
   # extract polygons whose biomes contains more than one records and that intersect with the alpha hull (https://rpubs.com/sogletr/sf-ops)
   biomes_more_than_n_point_geom <- suppressMessages(biomes.with.more.than.n.point %>%
@@ -214,7 +211,7 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
 
   if(verbose) cat("> [...identify unique records in biomes...]\n")
   # identify unique records in biomes
-  biomes.with.min.n.point <- biomes[num.point.by.biome < min_occ_number,]
+  biomes.with.min.n.point <- RGeodata:::biomes[num.point.by.biome < min_occ_number,]
   is.min.n.point.biome = suppressMessages(st_par_intersects(working_loc_data, biomes.with.min.n.point, nchunks=10) %>%
                                                purrr::map_lgl(., function(x) length(x) == 1L))
   if(any(is.min.n.point.biome)){
@@ -972,7 +969,7 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
   }
   suppressMessages(
     if(!use_ecoregions){
-      polygons_ <- biomes %>%
+      polygons_ <- RGeodata:::biomes %>%
         sf::st_cast(., "POLYGON", warn=FALSE)
     }else{
       polygons_ <- RGeodata::ecoregions %>%

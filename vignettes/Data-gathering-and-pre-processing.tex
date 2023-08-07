@@ -1,0 +1,835 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\usepackage{tcolorbox}
+
+\definecolor{mybluebackground}{HTML}{e7f3fe}
+\definecolor{mybluecolor}{HTML}{31708f}
+\definecolor{myblueborder}{HTML}{bce8f1}
+\definecolor{mybrownbackground}{HTML}{f9f0e4}
+\definecolor{mybrowncolor}{HTML}{8a6d3b}
+\definecolor{mybrownborder}{HTML}{faebcc}
+
+\newtcolorbox{infobox}{
+  colback=mybluebackground,
+  colframe=myblueborder,
+  coltext=mybluecolor,
+  boxsep=3pt,
+  boxrule=1pt,
+  arc=4pt}
+
+\newtcolorbox{warningbox}{
+  colback=mybrownbackground,
+  colframe=mybrownborder,
+  coltext=mybrowncolor,
+  boxsep=3pt,
+  boxrule=1pt,
+  arc=4pt}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\floatplacement{figure}{H}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Data gathering and (pre-)processing},
+  pdfauthor={Ian Ondo},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Data gathering and (pre-)processing}
+\author{Ian Ondo}
+\date{2023-05-29}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\begin{warningbox}
+
+\textbf{Package notes:}\\
+We need to install the following set of R packages to successfully run
+the codes in this vignette:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{data.table} (Dowle and Srinivasan 2021)
+\item
+  \textbf{rWCVP} (Brown et al. 2023)
+\end{itemize}
+
+\end{warningbox}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+In this vignette, we will show how to compile and format occurrence data
+from various data sources available online, or as zipped (compressed)
+files using \textbf{UsefulPlants}. We will focus on two online
+databases:
+
+\begin{itemize}
+\item
+  \emph{Global Biodiversity Information Facility} (\textbf{GBIF},
+  \href{https://www.gbif.org}{\emph{\underline{https://www.gbif.org}}})
+\item
+  \emph{Botanical information and Ecology Network} (\textbf{BIEN version
+  4.1},
+  \href{https://bien.nceas.ucsb.edu/bien}{\emph{\underline{https://bien.nceas.ucsb.edu/bien}}})
+\end{itemize}
+
+Both have R packages facilitating the download of occurrence records
+directly from R. For example, the function \emph{get\_gbifid\_} from the
+R package \textbf{taxize} (Scott Chamberlain and Eduard Szocs 2013) and
+function \emph{occ\_download} from the R package \textbf{rgbif}
+(Chamberlain and Boettiger 2017) can be used for matching species names
+and downloading occurrence records from GBIF respectively, while the
+function \emph{BIEN\_occurrence\_species} from the R package
+\textbf{BIEN} (Maitner 2020)helps to extract occurrence records from the
+BIEN database.\\
+To our knowledge, other databases such as \textbf{RAINBIO}
+(\href{http://rainbio.cesab.org/}{\underline{http://rainbio.cesab.org/}}),
+\textbf{speciesLink}
+(\href{http://www.splink.org.br/}{\underline{http://www.splink.org.br/}}),
+\textbf{BioTIME}
+(\href{https://biotime.st-andrews.ac.uk/}{\underline{https://biotime.st-andrews.ac.uk/}})
+or \textbf{Genesys}
+(\href{https://www.genesys-pgr.org}{\underline{https://www.genesys-pgr.org}})
+do not provide R packages to access their data, but snapshots of the
+entire database can be accessed, sometimes on request, and often shared
+as a (compressed) file. In this case the \textbf{data.table} (Dowle and
+Srinivasan 2021) is a very useful R package in terms of efficiency and
+speed to process these type of datasets.
+
+\hypertarget{i.-download-a-list-of-useful-plants-species-names}{%
+\section{I. Download a list of useful plants species
+names}\label{i.-download-a-list-of-useful-plants-species-names}}
+
+Download the useful plants database used in Pironon and Ondo et al.~2023
+\href{https://www.here.com}{\textcolor{blue}{\underline{here}}}, and
+unzip it into a folder, e.g.~\emph{``usefulplant\_data''}. Then, read in
+the data and filter as needed:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# load the data into memory}
+\NormalTok{useful\_plant\_db }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\AttributeTok{input=}\StringTok{"usefulplant\_data/useful\_plants\_data\_list.csv"}\NormalTok{,}
+                                     \AttributeTok{h=}\ConstantTok{TRUE}\NormalTok{,}
+                                     \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{)}
+
+\NormalTok{useful\_plant\_db}
+
+\CommentTok{\# get the list of all useful plants names in the database}
+\NormalTok{useful\_plant\_names }\OtherTok{\textless{}{-}}\NormalTok{ useful\_plant\_db }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{pull}\NormalTok{(binomial\_acc\_name) }\CommentTok{\# extract binomial accepted names}
+
+\CommentTok{\# optionally filter e.g. edible plants}
+\NormalTok{edible\_plant\_names }\OtherTok{\textless{}{-}}\NormalTok{ useful\_plant\_db }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(HumanFood}\SpecialCharTok{==}\DecValTok{1}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}         \CommentTok{\# select edible plants}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{pull}\NormalTok{(binomial\_acc\_name)          }
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{ii.-download-occurrence-data-from-gbif}{%
+\section{II. Download occurrence data from
+GBIF}\label{ii.-download-occurrence-data-from-gbif}}
+
+\textbf{UsefulPlants} has a function called \texttt{queryGBIF} that uses
+both \emph{get\_gbifid\_} and \emph{occ\_download} to obtain occurrence
+records from GBIF from a list of species names. The function
+\texttt{get\_gbiftaxonkey} is used internally to get taxon \emph{keys},
+and the essential of the code is described in this blog
+\href{https://data-blog.gbif.org/post/downloading-long-species-lists-on-gbif/}{\emph{\textcolor{blue}{\underline{downloading a long species list on GBIF}}}},
+feel free to have a look at it.\\
+Basically, we first need to create a GBIF account because we are going
+to use GBIF credentials as explained in the blog to login to GBIF and
+download occurrence records for a fairly large number of species.
+
+\hypertarget{ii.1-create-a-gbif-account}{%
+\subsection{\texorpdfstring{II.1 \emph{create a GBIF
+account}}{II.1 create a GBIF account}}\label{ii.1-create-a-gbif-account}}
+
+Go to the GBIF website homepage
+\href{https://www.gbif.org}{\underline{https://www.gbif.org}}
+\rightarrow click on the \texttt{login} button on the top-right corner
+of the page \rightarrow click on \texttt{register} \rightarrow fill up
+the fields to create your account. Then, save your
+\emph{\underline{GBIF username}}, \emph{\underline{email}} associated
+with username and \emph{\underline{password}} for logging in to GBIF
+somewhere safe, for example in your .Renviron file:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{install.packages}\NormalTok{(}\StringTok{"usethis"}\NormalTok{) }\CommentTok{\# if not yet installed}
+\FunctionTok{library}\NormalTok{(usethis)}
+
+\CommentTok{\# open your .Renviron file}
+\FunctionTok{edit\_r\_environ}\NormalTok{()}
+
+\CommentTok{\# write down your GBIF credentials as environmental variables}
+\NormalTok{GBIF\_USER }\OtherTok{=} \StringTok{"your\_username"}
+\NormalTok{GBIF\_EMAIL }\OtherTok{=} \StringTok{"your\_email\_address"}
+\NormalTok{GBIF\_PWD }\OtherTok{=} \StringTok{"your\_password"}
+
+\CommentTok{\# save your changes, close the file and restart your R session}
+\end{Highlighting}
+\end{Shaded}
+
+Check that your GBIF credentials are now accessible by typing in the
+console e.g.~\texttt{Sys.getenv("GBIF\_USER")}.
+
+\hypertarget{ii.2-use-querygbif-to-download-occurrence-records}{%
+\subsection{\texorpdfstring{II.2 \emph{use \texttt{queryGBIF} to
+download occurrence
+records}}{II.2 use queryGBIF to download occurrence records}}\label{ii.2-use-querygbif-to-download-occurrence-records}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# load the useful plants package}
+\FunctionTok{library}\NormalTok{(UsefulPlants)}
+
+\CommentTok{\# make sure species names are correctly formatted }
+\NormalTok{edible\_plant\_names }\OtherTok{\textless{}{-}} \FunctionTok{gsub}\NormalTok{(}\StringTok{"\_"}\NormalTok{,}\StringTok{" "}\NormalTok{,edible\_plant\_names)}
+
+\CommentTok{\# specify a folder where to store the zip file of your downloads}
+\CommentTok{\# it is recommended to use a specific folder for better traceability}
+\NormalTok{dwnld\_dir }\OtherTok{=} \FunctionTok{tempdir}\NormalTok{()}
+  
+\CommentTok{\# run the query using the vector of plant species names}
+\NormalTok{gbifDATA }\OtherTok{=} \FunctionTok{queryGBIF}\NormalTok{(}\AttributeTok{species\_name=}\NormalTok{edible\_plant\_names,}
+                \AttributeTok{gbif\_download\_dir=}\NormalTok{dwnld\_dir,}
+                \CommentTok{\# time in seconds before dropping out the connection}
+                \AttributeTok{time\_out =} \DecValTok{300}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{infobox}
+
+By default, \textbf{queryGBIF} will return after \texttt{time\_out}
+seconds. If GBIF has not finished processing your query or if something
+went wrong, \texttt{queryGBIF} will returns \texttt{NULL} and an error
+message, in this case:
+
+\begin{itemize}
+\item
+  \textbf{\underline{Login}} to your account on GBIF.
+\item
+  Go to your downloads and \textbf{\underline{check}} out the status of
+  your query.
+\item
+  Once available, you can manually \textbf{\underline{download}} your
+  dataset as zip file in the directory of your choice.
+\end{itemize}
+
+\end{infobox}
+
+If everything worked, the output of \texttt{queryGBIF} is a
+\texttt{data.table} object with your occurrence records with the
+following columns:
+
+\begin{itemize}
+\item
+  \emph{``species''}
+\item
+  \emph{``fullname''},
+\item
+  \emph{``decimalLongitude''}
+\item
+  \emph{``decimalLatitude''}
+\item
+  \emph{``countryCode''}
+\item
+  \emph{``coordinateUncertaintyInMeters''}
+\item
+  \emph{``year''}
+\item
+  \emph{``individualCount''}
+\item
+  \emph{``gbifID''}
+\item
+  \emph{``basisOfRecord''}
+\item
+  \emph{``institutionCode''}
+\item
+  \emph{``establishmentMeans''}
+\item
+  \emph{``is\_cultivated\_observation''}
+\item
+  \emph{``sourceID''} (always GBIF)
+\end{itemize}
+
+Find documentation on most of the fields
+\href{https://www.gbif.org/data-quality-requirements-occurrences}{\emph{https://www.gbif.org/data-quality-requirements-occurrences}}.
+
+If your automatic download failed and you ended up downloading a zip
+file manually, you can still format your dataset as follows:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# get the path to your zip file}
+\NormalTok{path\_to\_my\_zip.file }\OtherTok{\textless{}{-}} \StringTok{"path/to/yourzip.file"}
+
+\CommentTok{\# read in the data from your zip file}
+\NormalTok{gbifDATA }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\AttributeTok{cmd=}\FunctionTok{paste}\NormalTok{(}\StringTok{"unzip {-}p"}\NormalTok{,path\_to\_my\_zip.file),}
+                                       \AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{,}
+                                       \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{,}
+                                       \AttributeTok{na.strings=}\FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{,}\ConstantTok{NA}\NormalTok{),}
+                                       \AttributeTok{fill=}\ConstantTok{FALSE}\NormalTok{,}
+                                       \AttributeTok{quote =} \StringTok{""}\NormalTok{,}
+                                       \AttributeTok{select=}\FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+                                               \StringTok{"taxonRank"}\NormalTok{,}
+                                               \StringTok{"infraspecificEpithet"}\NormalTok{,}
+                                               \StringTok{"decimalLongitude"}\NormalTok{,}
+                                               \StringTok{"decimalLatitude"}\NormalTok{,}
+                                               \StringTok{"countryCode"}\NormalTok{,}
+                                               \StringTok{"coordinateUncertaintyInMeters"}\NormalTok{,}
+                                               \StringTok{"year"}\NormalTok{,}
+                                               \StringTok{"gbifID"}\NormalTok{,}
+                                               \StringTok{"basisOfRecord"}\NormalTok{,}
+                                               \StringTok{"institutionCode"}\NormalTok{,}
+                                               \StringTok{"establishmentMeans"}\NormalTok{,}
+                                               \StringTok{"individualCount"}\NormalTok{))}
+
+\NormalTok{gbifDATA}\OtherTok{\textless{}{-}}\FunctionTok{na.omit}\NormalTok{(gbifDATA, }\AttributeTok{cols=} \FunctionTok{c}\NormalTok{(}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{))}
+
+\CommentTok{\# format the data:}
+\NormalTok{gbifDATA[, }\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{taxonRank =} \FunctionTok{ifelse}\NormalTok{(taxonRank }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"SPECIES"}\NormalTok{,}\StringTok{"GENUS"}\NormalTok{),}
+                                   \ConstantTok{NA}\NormalTok{,}
+                                   \FunctionTok{ifelse}\NormalTok{(taxonRank}\SpecialCharTok{==}\StringTok{"FORM"}\NormalTok{, }\StringTok{"f."}\NormalTok{,}
+                                          \FunctionTok{ifelse}\NormalTok{(taxonRank}\SpecialCharTok{==}\StringTok{"SUBSPECIES"}\NormalTok{, }\StringTok{"subsp."}\NormalTok{,}
+                                                 \FunctionTok{ifelse}\NormalTok{(taxonRank}\SpecialCharTok{==}\StringTok{"VARIETY"}\NormalTok{,}\StringTok{"var."}\NormalTok{,}
+\NormalTok{                                                        taxonRank)))),}
+                    \AttributeTok{countryCode =}\NormalTok{ countrycode}\SpecialCharTok{::}\FunctionTok{countrycode}\NormalTok{(countryCode,}
+                                                           \AttributeTok{origin =}  \StringTok{\textquotesingle{}iso2c\textquotesingle{}}\NormalTok{,}
+                                                           \AttributeTok{destination =} \StringTok{\textquotesingle{}iso3c\textquotesingle{}}\NormalTok{,}
+                                                           \AttributeTok{nomatch =} \ConstantTok{NA}\NormalTok{),}
+                    \AttributeTok{establishmentMeans =} \FunctionTok{ifelse}\NormalTok{(establishmentMeans}\SpecialCharTok{==}\StringTok{"INTRODUCED"}\NormalTok{,}
+                                                \StringTok{"Introduced"}\NormalTok{,}
+                                                \FunctionTok{ifelse}\NormalTok{(establishmentMeans}\SpecialCharTok{==} \StringTok{"NATIVE"}\NormalTok{,}
+                                                       \StringTok{"Native"}\NormalTok{,}
+\NormalTok{                                                       establishmentMeans)))]}
+
+\CommentTok{\# create \textquotesingle{}fullname\textquotesingle{}, \textquotesingle{}is\_cultivated\_observation\textquotesingle{} and \textquotesingle{}sourceID\textquotesingle{} columns}
+\NormalTok{gbifDATA[, }\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{fullname =} \FunctionTok{ifelse}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(infraspecificEpithet),}
+                                  \FunctionTok{paste}\NormalTok{(species),}
+                                  \FunctionTok{paste}\NormalTok{(species, taxonRank, infraspecificEpithet)),}
+                \AttributeTok{is\_cultivated\_observation =} \ConstantTok{NA}\NormalTok{,}
+                \AttributeTok{sourceID =} \StringTok{\textquotesingle{}GBIF\textquotesingle{}}\NormalTok{)]}
+
+\CommentTok{\# delete taxonRank and infraspecificEpithet columns}
+\NormalTok{gbifDATA[, }\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{taxonRank =} \ConstantTok{NULL}\NormalTok{, }\AttributeTok{infraspecificEpithet =} \ConstantTok{NULL}\NormalTok{)]}
+
+\CommentTok{\# remove fossil records}
+\NormalTok{gbifDATA }\OtherTok{\textless{}{-}}\NormalTok{ gbifDATA[basisOfRecord}\SpecialCharTok{!=}\StringTok{"FOSSIL\_SPECIMEN"}\NormalTok{]}
+
+\CommentTok{\# set column order}
+\NormalTok{colNames }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+             \StringTok{"fullname"}\NormalTok{,}
+             \StringTok{"decimalLongitude"}\NormalTok{,}
+             \StringTok{"decimalLatitude"}\NormalTok{,}
+             \StringTok{"countryCode"}\NormalTok{,}
+             \StringTok{"coordinateUncertaintyInMeters"}\NormalTok{,}
+             \StringTok{"year"}\NormalTok{,}
+             \StringTok{"individualCount"}\NormalTok{,}
+             \StringTok{"gbifID"}\NormalTok{,}
+             \StringTok{"basisOfRecord"}\NormalTok{,}
+             \StringTok{"institutionCode"}\NormalTok{,}
+             \StringTok{"establishmentMeans"}\NormalTok{,}
+             \StringTok{"is\_cultivated\_observation"}\NormalTok{,}
+             \StringTok{"sourceID"}\NormalTok{)}
+
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setcolorder}\NormalTok{(gbifDATA, colNames)}
+
+\CommentTok{\# set the key to the species column to enable fast binary search}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setkey}\NormalTok{(gbifDATA, }\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{iii.-download-occurrence-data-from-bien}{%
+\section{III. Download occurrence data from
+BIEN}\label{iii.-download-occurrence-data-from-bien}}
+
+Similarly, \textbf{UsefulPlants} has a function called
+\texttt{queryBIEN} to download occurrence records from the BIEN
+database. Internally, \texttt{queryBIEN} uses
+\texttt{BIEN\_occurrence\_species} with the following default arguments:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cultivated }\OtherTok{=} \ConstantTok{TRUE}\NormalTok{,}
+\NormalTok{only.new.world }\OtherTok{=} \ConstantTok{FALSE}\NormalTok{,}
+\NormalTok{all.taxonomy }\OtherTok{=} \ConstantTok{TRUE}\NormalTok{,}
+\NormalTok{native.status }\OtherTok{=} \ConstantTok{TRUE}\NormalTok{,}
+\NormalTok{observation.type }\OtherTok{=} \ConstantTok{TRUE}\NormalTok{,}
+\NormalTok{political.boundaries }\OtherTok{=} \ConstantTok{TRUE}\NormalTok{,}
+\NormalTok{natives.only }\OtherTok{=} \ConstantTok{FALSE}\NormalTok{,}
+\NormalTok{collection.info }\OtherTok{=} \ConstantTok{TRUE}
+\end{Highlighting}
+\end{Shaded}
+
+Check out the meaning of these arguments from the package help here
+\href{https://search.r-project.org/CRAN/refmans/BIEN/html/BIEN_occurrence_species.html}{\emph{\textcolor{blue}{\underline{manual}}}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# run the query using the vector of plant species names previously defined in section II.2 }
+\NormalTok{bienDATA }\OtherTok{=} \FunctionTok{queryBIEN}\NormalTok{(}\AttributeTok{species\_name=}\NormalTok{edible\_plant\_names)}
+\end{Highlighting}
+\end{Shaded}
+
+If everything works fine, \texttt{bienDATA} should be a
+\texttt{data.table} object formatted as \texttt{gbifDATA}, i.e.~with the
+same column names.
+
+\hypertarget{iv.-formatting-occurrence-data-from-rainbio-specieslink-biotime-and-genesys}{%
+\section{\texorpdfstring{IV. Formatting occurrence data from
+\emph{RAINBIO}, \emph{speciesLink}, \emph{BioTIME} and
+\emph{Genesys}}{IV. Formatting occurrence data from RAINBIO, speciesLink, BioTIME and Genesys}}\label{iv.-formatting-occurrence-data-from-rainbio-specieslink-biotime-and-genesys}}
+
+For consistency between the different databases, we need to format each
+occurrence dataset the same way as we did for \emph{GBIF} and
+\emph{BIEN}.\\
+Let's assume that each dataset comes as a zipped folder, if not the
+case, replace \texttt{paste("unzip\ -\ p","path/to/file.zip")} by the
+path to your unzipped file in the relevant part of the code.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# define column names}
+\NormalTok{colNames }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+             \StringTok{"fullname"}\NormalTok{,}
+             \StringTok{"decimalLongitude"}\NormalTok{,}
+             \StringTok{"decimalLatitude"}\NormalTok{,}
+             \StringTok{"countryCode"}\NormalTok{,}
+             \StringTok{"coordinateUncertaintyInMeters"}\NormalTok{,}
+             \StringTok{"year"}\NormalTok{,}
+             \StringTok{"individualCount"}\NormalTok{,}
+             \StringTok{"gbifID"}\NormalTok{,}
+             \StringTok{"basisOfRecord"}\NormalTok{,}
+             \StringTok{"institutionCode"}\NormalTok{,}
+             \StringTok{"establishmentMeans"}\NormalTok{,}
+             \StringTok{"is\_cultivated\_observation"}\NormalTok{,}
+             \StringTok{"sourceID"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{rainbio}{%
+\subsection{\texorpdfstring{\emph{RAINBIO}}{RAINBIO}}\label{rainbio}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# read in the data}
+\NormalTok{rainbioDATA }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"unzip {-}p"}\NormalTok{,}\StringTok{"path/to/file.zip"}\NormalTok{),}
+                                     \AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{,}
+                                     \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{,}
+                                     \AttributeTok{select=}\FunctionTok{c}\NormalTok{(}\StringTok{"tax\_sp\_level"}\NormalTok{,}
+                                      \StringTok{"species"}\NormalTok{,}
+                                      \StringTok{"decimalLatitude"}\NormalTok{,}
+                                      \StringTok{"decimalLongitude"}\NormalTok{,}
+                                      \StringTok{"iso3lonlat"}\NormalTok{,}
+                                      \StringTok{"basisOfRecord"}\NormalTok{,}
+                                      \StringTok{"institutionCode"}\NormalTok{,}
+                                      \StringTok{"catalogNumber"}\NormalTok{,}
+                                      \StringTok{"coly"}\NormalTok{))}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\#= formatting}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\# change the column names}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setnames}\NormalTok{(rainbioDATA, }
+                     \FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+                       \StringTok{"fullname"}\NormalTok{,}
+                       \StringTok{"decimalLatitude"}\NormalTok{,}
+                       \StringTok{"decimalLongitude"}\NormalTok{,}
+                       \StringTok{"countryCode"}\NormalTok{,}
+                       \StringTok{"basisOfRecord"}\NormalTok{,}
+                       \StringTok{"institutionCode"}\NormalTok{,}
+                       \StringTok{"gbifID"}\NormalTok{,}
+                       \StringTok{"year"}\NormalTok{))}
+
+\CommentTok{\# remove NA coordinates}
+\NormalTok{rainbioDATA }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(rainbioDATA, }\AttributeTok{cols=} \FunctionTok{c}\NormalTok{(}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{))}
+
+\CommentTok{\# create additional columns: \textquotesingle{}coordinateUncertaintyInMeters\textquotesingle{} , \textquotesingle{}is\_cultivated\_observation\textquotesingle{},}
+\CommentTok{\# \textquotesingle{}establishmentMeans\textquotesingle{}, \textquotesingle{}individualCount\textquotesingle{} and \textquotesingle{}sourceID\textquotesingle{}}
+
+\NormalTok{rainbioDATA[ ,}\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{coordinateUncertaintyInMeters =} \ConstantTok{NA}\NormalTok{,}
+                  \AttributeTok{is\_cultivated\_observation =} \StringTok{"No"}\NormalTok{,}
+                  \AttributeTok{establishmentMeans =} \ConstantTok{NA}\NormalTok{,}
+                  \AttributeTok{individualCount =} \ConstantTok{NA}\NormalTok{,}
+                  \AttributeTok{sourceID =} \StringTok{\textquotesingle{}RAINBIO\textquotesingle{}}\NormalTok{)]}
+
+\CommentTok{\# set column order}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setcolorder}\NormalTok{(rainbioDATA, colNames)}
+
+\CommentTok{\# set the key to the species column to enable fast binary search}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setkey}\NormalTok{(rainbioDATA, }\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{specieslink}{%
+\subsection{\texorpdfstring{\emph{speciesLink}}{speciesLink}}\label{specieslink}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# read in the data}
+\NormalTok{spLinkDATA }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"unzip {-}p"}\NormalTok{,}\StringTok{"path/to/file.zip"}\NormalTok{),}
+                                    \AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{,}
+                                    \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{,}
+                                    \AttributeTok{encoding =} \StringTok{\textquotesingle{}UTF{-}8\textquotesingle{}}\NormalTok{,}
+                                    \AttributeTok{na.strings=}\FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{,}\ConstantTok{NA}\NormalTok{),}
+                                    \AttributeTok{select=} \FunctionTok{c}\NormalTok{(}\StringTok{"query"}\NormalTok{,}
+                                             \StringTok{"scientificname"}\NormalTok{,}
+                                             \StringTok{"longitude"}\NormalTok{,}
+                                             \StringTok{"latitude"}\NormalTok{,}
+                                             \StringTok{"country"}\NormalTok{,}
+                                             \StringTok{"coordinateprecision"}\NormalTok{,}
+                                             \StringTok{"yearcollected"}\NormalTok{,}
+                                             \StringTok{"individualcount"}\NormalTok{,}
+                                             \StringTok{"catalognumber"}\NormalTok{,}
+                                             \StringTok{"basisofrecord"}\NormalTok{,}
+                                             \StringTok{"institutioncode"}\NormalTok{))}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\#= formatting}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\# change the column names}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setnames}\NormalTok{(spLinkDATA, }
+                     \FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+                       \StringTok{"fullname"}\NormalTok{,}
+                       \StringTok{"decimalLatitude"}\NormalTok{,}
+                       \StringTok{"decimalLongitude"}\NormalTok{,}
+                       \StringTok{"countryCode"}\NormalTok{,}
+                       \StringTok{"coordinateUncertaintyInMeters"}\NormalTok{,}
+                       \StringTok{"year"}\NormalTok{,}
+                       \StringTok{"individualCount"}\NormalTok{,}
+                       \StringTok{"gbifID"}\NormalTok{,}
+                       \StringTok{"basisOfRecord"}\NormalTok{,}
+                       \StringTok{"institutionCode"}\NormalTok{))}
+
+\CommentTok{\# remove NA coordinates}
+\NormalTok{spLinkDATA }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(spLinkDATA, }\AttributeTok{cols=} \FunctionTok{c}\NormalTok{(}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{))}
+
+\NormalTok{spLinkDATA[ ,}\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{species =} \FunctionTok{paste0}\NormalTok{(}\FunctionTok{substr}\NormalTok{(species,}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{),}
+                                   \FunctionTok{tolower}\NormalTok{(}\FunctionTok{substr}\NormalTok{(species,}\DecValTok{2}\NormalTok{,}\FunctionTok{nchar}\NormalTok{(species)))),}
+                 \AttributeTok{countryCode =} \FunctionTok{ifelse}\NormalTok{(countryCode}\SpecialCharTok{==}\StringTok{\textquotesingle{}Brasil\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Brazil\textquotesingle{}}\NormalTok{,countryCode),}
+                 \AttributeTok{basisOfRecord =} \FunctionTok{ifelse}\NormalTok{(basisOfRecord}\SpecialCharTok{==}\StringTok{"S"}\NormalTok{,}\StringTok{"SPECIMEN"}\NormalTok{,}
+                                        \FunctionTok{ifelse}\NormalTok{(basisOfRecord}\SpecialCharTok{==} \StringTok{"O"}\NormalTok{,}
+                                               \StringTok{"OBSERVATION"}\NormalTok{,}
+\NormalTok{                                               basisOfRecord)),}
+                 \AttributeTok{is\_cultivated\_observation =} \ConstantTok{NA}\NormalTok{,}
+                 \AttributeTok{establishmentMeans =} \ConstantTok{NA}\NormalTok{,}
+                 \AttributeTok{sourceID =} \StringTok{\textquotesingle{}spLink\textquotesingle{}}\NormalTok{)]}
+
+\NormalTok{spLinkDATA[ ,countryCode}\SpecialCharTok{:}\ErrorTok{=}\NormalTok{ countrycode}\SpecialCharTok{::}\FunctionTok{countrycode}\NormalTok{(countryCode,}
+                                                    \AttributeTok{origin =}  \StringTok{\textquotesingle{}country.name\textquotesingle{}}\NormalTok{,}
+                                                    \AttributeTok{destination =} \StringTok{\textquotesingle{}iso3c\textquotesingle{}}\NormalTok{,}
+                                                    \AttributeTok{nomatch =} \ConstantTok{NA}\NormalTok{)]}
+\CommentTok{\# set column order}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setcolorder}\NormalTok{(spLinkDATA, colNames)}
+
+\CommentTok{\# set the key to the species column to enable fast binary search}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setkey}\NormalTok{(spLinkDATA, }\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{biotime}{%
+\subsection{\texorpdfstring{\emph{bioTIME}}{bioTIME}}\label{biotime}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# read in the data}
+\NormalTok{biotimeDATA  }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"unzip {-}p"}\NormalTok{,}\StringTok{"path/to/file.zip"}\NormalTok{),}
+                                  \AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{,}
+                                  \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{,}
+                                  \AttributeTok{select=}\FunctionTok{c}\NormalTok{(}\StringTok{"GENUS\_SPECIES"}\NormalTok{,}
+                                           \StringTok{"LATITUDE"}\NormalTok{,}
+                                           \StringTok{"LONGITUDE"}\NormalTok{,}
+                                           \StringTok{"YEAR"}\NormalTok{,}
+                                           \StringTok{"sum.allrawdata.ABUNDANCE"}\NormalTok{,}
+                                           \StringTok{"SAMPLE\_DESC"}\NormalTok{))}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\#= formatting}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+
+\CommentTok{\# change the column names}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setnames}\NormalTok{(biotimeDATA, }\FunctionTok{c}\NormalTok{(}\StringTok{"species"}\NormalTok{,}
+                                    \StringTok{"decimalLatitude"}\NormalTok{,}
+                                    \StringTok{"decimalLongitude"}\NormalTok{,}
+                                    \StringTok{"year"}\NormalTok{,}
+                                    \StringTok{"individualCount"}\NormalTok{,}
+                                    \StringTok{"gbifID"}\NormalTok{))}
+
+\CommentTok{\# remove NA coordinates}
+\NormalTok{biotimeDATA  }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(biotimeDATA, }\AttributeTok{cols=} \FunctionTok{c}\NormalTok{(}\StringTok{"decimalLatitude"}\NormalTok{, }\StringTok{"decimalLongitude"}\NormalTok{))}
+
+\CommentTok{\# create additional columns: \textquotesingle{}fullname\textquotesingle{}, \textquotesingle{}coordinateUncertaintyInMeters\textquotesingle{},\textquotesingle{}institutionCode\textquotesingle{},}
+\CommentTok{\#\textquotesingle{}countryCode\textquotesingle{}, \textquotesingle{}basisOfRecord\textquotesingle{}, \textquotesingle{}establishmentMeans\textquotesingle{}, \textquotesingle{}is\_cultivated\_observation\textquotesingle{}}
+\CommentTok{\# and \textquotesingle{}sourceID\textquotesingle{}}
+\NormalTok{biotimeDATA[ ,}\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{fullname =}\NormalTok{ species,}
+                   \AttributeTok{coordinateUncertaintyInMeters =} \ConstantTok{NA}\NormalTok{,}
+                   \AttributeTok{institutionCode =} \ConstantTok{NA}\NormalTok{,}
+                   \AttributeTok{countryCode =} \ConstantTok{NA}\NormalTok{,}
+                   \AttributeTok{basisOfRecord =} \ConstantTok{NA}\NormalTok{,}
+                   \AttributeTok{establishmentMeans =} \ConstantTok{NA}\NormalTok{,}
+                   \AttributeTok{is\_cultivated\_observation =} \StringTok{"No"}\NormalTok{,}
+                   \AttributeTok{sourceID =} \StringTok{\textquotesingle{}BIOTIME\textquotesingle{}}\NormalTok{)]}
+
+\CommentTok{\# set column order}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setcolorder}\NormalTok{(biotimeDATA, colNames)}
+
+\CommentTok{\# set the key to the species column to enable fast binary search}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setkey}\NormalTok{(biotimeDATA, }\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{genesys}{%
+\subsection{\texorpdfstring{\emph{Genesys}}{Genesys}}\label{genesys}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\# read in the data}
+\NormalTok{genesysDATA }\OtherTok{\textless{}{-}}\NormalTok{ data.table}\SpecialCharTok{::}\FunctionTok{fread}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"unzip {-}p"}\NormalTok{,}\StringTok{"path/to/file.zip"}\NormalTok{),}
+                                     \AttributeTok{header=}\ConstantTok{TRUE}\NormalTok{,}
+                                     \AttributeTok{showProgress=}\ConstantTok{FALSE}\NormalTok{,}
+                                     \AttributeTok{na.strings=}\FunctionTok{c}\NormalTok{(}\StringTok{""}\NormalTok{,}\ConstantTok{NA}\NormalTok{),}
+                                     \AttributeTok{select=} \FunctionTok{c}\NormalTok{(}\StringTok{"GENUS"}\NormalTok{,}
+                                    \StringTok{"SPECIES"}\NormalTok{,}
+                                    \StringTok{"SUBTAXA"}\NormalTok{,}
+                                    \StringTok{"DECLONGITUDE"}\NormalTok{,}
+                                    \StringTok{"DECLATITUDE"}\NormalTok{,}
+                                    \StringTok{"ORIGCTY"}\NormalTok{,}
+                                    \StringTok{"COLLSRC"}\NormalTok{,}
+                                    \StringTok{"INSTCODE"}\NormalTok{,}
+                                    \StringTok{"UUID"}\NormalTok{,}
+                                    \StringTok{"COLLDATE"}\NormalTok{,}
+                                    \StringTok{"COORDUNCERT"}\NormalTok{,}
+                                    \StringTok{"SAMPSTAT"}\NormalTok{))}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\#= formatting}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+
+\CommentTok{\# change the column names}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setnames}\NormalTok{(genesysDATA,}
+                     \FunctionTok{c}\NormalTok{(}\StringTok{"genus"}\NormalTok{,}
+                       \StringTok{"species"}\NormalTok{,}
+                       \StringTok{"subtaxa"}\NormalTok{,}
+                       \StringTok{"decimalLongitude"}\NormalTok{,}
+                       \StringTok{"decimalLatitude"}\NormalTok{,}
+                       \StringTok{"countryCode"}\NormalTok{,}
+                       \StringTok{"basisOfRecord"}\NormalTok{,}
+                       \StringTok{"institutionCode"}\NormalTok{,}
+                       \StringTok{"gbifID"}\NormalTok{,}
+                       \StringTok{"year"}\NormalTok{,}
+                       \StringTok{"coordinateUncertaintyInMeters"}\NormalTok{,}
+                       \StringTok{"is\_cultivated\_observation"}\NormalTok{))}
+
+\CommentTok{\# format the data: }
+\CommentTok{\# concatenate genus+species,}
+\CommentTok{\# create full species name,}
+\CommentTok{\# extract the year of the collection,}
+\CommentTok{\# transform information about cultivated observation and basis of records in categorical variable}
+\NormalTok{genesysDATA[, }\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{species =} \FunctionTok{paste}\NormalTok{(genus, species),}
+                  \AttributeTok{fullname =} \FunctionTok{ifelse}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(subtaxa),}
+                                    \FunctionTok{paste}\NormalTok{(genus, species),}
+                                    \FunctionTok{paste}\NormalTok{(genus, species, subtaxa)),}
+                  \AttributeTok{year =} \FunctionTok{as.numeric}\NormalTok{(stringr}\SpecialCharTok{::}\FunctionTok{str\_extract}\NormalTok{(year,}\StringTok{"[[:digit:]]\{4\}"}\NormalTok{)),}
+                  \AttributeTok{is\_cultivated\_observation =} \FunctionTok{ifelse}\NormalTok{(is\_cultivated\_observation}\SpecialCharTok{==}\DecValTok{999}\NormalTok{,}
+                                                     \ConstantTok{NA}\NormalTok{,}
+                                                     \FunctionTok{ifelse}\NormalTok{(is\_cultivated\_observation }\SpecialCharTok{\textgreater{}} \DecValTok{300}\NormalTok{,}
+                                                            \StringTok{"Yes"}\NormalTok{,}
+                                                            \StringTok{"No"}\NormalTok{)),}
+                  \AttributeTok{basisOfRecord =} \FunctionTok{cut}\NormalTok{(basisOfRecord, }
+                                      \AttributeTok{breaks=}\FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{16}\NormalTok{, }\DecValTok{29}\NormalTok{, }\DecValTok{59}\NormalTok{, }\DecValTok{63}\NormalTok{),}
+                                      \AttributeTok{labels=}\FunctionTok{c}\NormalTok{(}
+                                        \StringTok{"Wild habitat"}\NormalTok{,}
+                                        \ConstantTok{NA}\NormalTok{,}
+                                        \StringTok{"Cultivated habitat"}\NormalTok{,}
+                                        \StringTok{"Wild habitat"}\NormalTok{)}
+\NormalTok{                                      ))]}
+
+\CommentTok{\# create additional columns: \textquotesingle{}establishmentMeans\textquotesingle{}, \textquotesingle{}individualCount\textquotesingle{} and }
+\CommentTok{\# \textquotesingle{}sourceID\textquotesingle{} and delete \textquotesingle{}genus\textquotesingle{} and \textquotesingle{}subtaxa\textquotesingle{}}
+\NormalTok{genesysDATA[ ,}\StringTok{\textasciigrave{}}\AttributeTok{:=}\StringTok{\textasciigrave{}}\NormalTok{(}\AttributeTok{genus =} \ConstantTok{NULL}\NormalTok{,}
+                  \AttributeTok{subtaxa =} \ConstantTok{NULL}\NormalTok{,}
+                  \AttributeTok{establishmentMeans =} \ConstantTok{NA}\NormalTok{,}
+                  \AttributeTok{individualCount =} \ConstantTok{NA}\NormalTok{,}
+                  \AttributeTok{sourceID =} \StringTok{\textquotesingle{}GENESYS\textquotesingle{}}\NormalTok{)]}
+
+\CommentTok{\# set column order}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setcolorder}\NormalTok{(genesysDATA, colNames)}
+
+\CommentTok{\# set the key to the species column to enable fast binary search}
+\NormalTok{data.table}\SpecialCharTok{::}\FunctionTok{setkey}\NormalTok{(genesysDATA, }\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-rwcvp}{}}%
+Brown, Matilda J. M., Barnaby E. Walker, Nicholas Black, Rafaël
+Govaerts, Ian Ondo, Robert Turner, and Eimear Nic Lughadha. 2023.
+{``rWCVP: A Companion r Package to the World Checklist of Vascular
+Plants.''} \emph{New Phytologist}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-rgbif}{}}%
+Chamberlain, Scott, and Carl Boettiger. 2017. {``R Python, and Ruby
+Clients for GBIF Species Occurrence Data.''} \emph{PeerJ PrePrints}.
+\url{https://doi.org/10.7287/peerj.preprints.3304v1}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-data_table}{}}%
+Dowle, Matt, and Arun Srinivasan. 2021. \emph{Data.table: Extension of
+`Data.frame`}. \url{https://CRAN.R-project.org/package=data.table}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-BIEN}{}}%
+Maitner, Brian. 2020. \emph{BIEN: Tools for Accessing the Botanical
+Information and Ecology Network Database}.
+\url{https://CRAN.R-project.org/package=BIEN}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-taxize}{}}%
+Scott Chamberlain, and Eduard Szocs. 2013. {``Taxize - Taxonomic Search
+and Retrieval in r.''} \emph{F1000Research}.
+\url{https://f1000research.com/articles/2-191/v2}.
+
+\end{CSLReferences}
+
+\end{document}

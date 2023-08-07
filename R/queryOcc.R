@@ -3,27 +3,19 @@
 #' Queries species occurrences from different databases online and offline
 #'
 #' @param species_name Either a vector of species names or a csv file where species names are stored in the first column.
+#' @param data_sources A (vector of) character string of the name of the database to search for occurrence data. Must be either `gbif` or `bien` or both for now.
 #' @param download_dir A directory where to save species occurrence records data downloaded from online databases.
 #' @param output_dir A directory where to save species occurrence records data after formatting.
 #' @param mc_core A numeric integer specifying the number of cores to be used for parallel computing. Should be >1 for parallel processing.
 #' @return None
 #' @export
-queryOcc <- function(species_name	= system.file("extdata/UsefulPlants_workflow/List_of_useful_plant_name.txt", package='UsefulPlants'),
-                     data_sources = c('gbif','bien','biotime','rainbio', 'genesys', 'spLink','cwr_gbif'),
-                     download_dir = system.file("extdata/Occ_dir/data_online", package='UsefulPlants'),
-                     output_dir   = system.file("extdata/Occ_dir/data_output", package='UsefulPlants'),
+queryOcc <- function(species_name	= NULL,
+                     data_sources = c('gbif','bien'),
+                     download_dir = "",
+                     output_dir   = "",
                      run_name			= 'Test',
                      mc_cores			= NULL)
 {
-  #----------------------------------------
-  #= 0.Load packages
-  #----------------------------------------
-  pkgs.to.load  <- c('data.table','occCite','parallel','stringr')
-  pkgs.loaded   <- sapply(pkgs.to.load,require,character.only=TRUE)
-  if(!any(pkgs.loaded)){
-    warning(paste('Packages',paste(pkgs.to.load[!pkgs.loaded],collapse=', '),'failed to load'))
-    stop("Try to re-install packages that failed to load")
-  }
   #--------------------
   #= 1. Check inputs
   #--------------------
@@ -48,7 +40,7 @@ queryOcc <- function(species_name	= system.file("extdata/UsefulPlants_workflow/L
     warning("Argument 'download_dir' is missing, and will be set to the current working directory");flush.console()
     download_dir = getwd()
   }
-  # ensure that the output directory provided exists
+  # make sure that the output directory provided exists
   if(!dir.exists(output_dir)){
     warning(paste("Output directory:", output_dir,"does not exist or could not be found, and will be set to the current working directory ./queryOcc"));flush.console()
     output_dir=file.path(getwd(), 'queryOcc')
@@ -89,5 +81,5 @@ queryOcc <- function(species_name	= system.file("extdata/UsefulPlants_workflow/L
   #====================================================================
   commandArgs <- function(...) paste0(names(params),'=',params)
   assign('commandArgs',commandArgs,envir=.GlobalEnv)
-  source(system.file("extdata/UsefulPlants_workflow/occQuery.R", package='UsefulPlants'))
+  source(system.file("extdata/workflows/occQuery.R", package='rsdm'))
 }
