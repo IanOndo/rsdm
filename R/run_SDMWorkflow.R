@@ -1,12 +1,12 @@
 #' Running SDM Workflow
 #'
-#' Runs Useful Plants Modelling workflow
+#' Execute a modelling pipeline R script
 #'
-#' @param base_directory A character string specifying the directory where to store the outputs of the workflow
-#' @param species_directory A character string specifying the directory where are stored the species occurrence records.
-#' @param env_directory A character string specifying the directory where are stored the environmental layers.
-#' @param which_uses A character string specifying the name of the plant use category to model among: `AnimalFood`, `HumanFood`,`InvertebratesFood`,`Medicinals`
-#' `EnvironmentalUses`,`Materials`,`SocialUses`,`GeneSources`,`Fuels`,`Poisons`. Default is `AllUses`, which means that outputs of all categories will be aggregated.
+#' @param base_directory A character string specifying the path to the directory where to store the outputs of the workflow
+#' @param species_directory A character string specifying  the path to the directory where are stored the species occurrence records.
+#' @param env_directory A character string specifying the path to the directory where are stored the environmental layers.
+#' @param force_sorting A logical. Should the sorting of occurrence records be repeated ? Only useful if `species_directory` contains new or updated occurrence data. Default is `FALSE`.
+#' @param workflow A character string specifying the path to the modelling script to run
 #' @return None
 #' @export
 #' @examples
@@ -15,24 +15,12 @@ run_SDMWorkflow <-function(base_directory,
                            species_directory,
                            env_directory,
                            force_sorting = FALSE,
-                           which_uses = "AllUses",
-                           mc_cores = NULL,
-                           use_default_settings = TRUE){
-
-  UsefulPlantsWorkflow <- system.file("extdata","UsefulPlants_workflow", "1UsefulPlants_Workflow.R",package="UsefulPlants")
-  if(UsefulPlantsWorkflow == ""){
-    stop("Couldn't find the modelling workflow script. Try re-installing UsefulPlants package", call.=FALSE)
+                           workflow = system.file("extdata","workflows","1UsefulPlants_Workflow.R",package="UsefulPlants"),
+                           run_name = "Test",
+                           mc_cores = NULL){
+  if(workflow == ""){
+    stop("Couldn't find the modelling workflow script", call.=FALSE)
   }
-
-  #=================
-  #= 0.Load packages
-  #=================
-  # pkgs.to.load  <- c('dplyr')
-  # pkgs.loaded   <- sapply(pkgs.to.load,require,character.only=TRUE)
-  # if(!any(pkgs.loaded)){
-  #   warning(paste('Packages',paste(pkgs.to.load[!pkgs.loaded],collapse=', '),'failed to load'))
-  #   stop("Try to re-install packages that failed to load")
-  # }
 
   #=================
   #= 1. Check inputs
@@ -64,7 +52,7 @@ run_SDMWorkflow <-function(base_directory,
 
     'force_sorting' = force_sorting,
 
-    'which_uses'    = which_uses,
+    'run_name' = run_name,
 
     'mc_cores' 			= round(mc_cores)  # number of cores to use
   )
@@ -73,6 +61,5 @@ run_SDMWorkflow <-function(base_directory,
   #== 3. Run workflow
   #==================
   commandArgs <- function(...) paste0(names(params),'=',params)
-  #source(file.path("C:/Users/Omari/Desktop/R_packages/UsefulPlants/inst/extdata/UsefulPlants_workflow/1UsefulPlants_Workflow.R"), local=TRUE)
-  source(system.file("extdata","UsefulPlants_workflow", "1UsefulPlants_Workflow.R", package="UsefulPlants"), local=TRUE)
+  source(workflow, local=TRUE)
 }

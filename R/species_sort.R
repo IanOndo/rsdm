@@ -1,6 +1,6 @@
-#' Sort species by number of occurrence records retrieve from occurrence data files.
+#' Group occurrence data based on the number of occurrence records available from occurrence data files.
 #'
-#' Assign species occurrence data to different folders based on minimum number of occurrence records
+#' Assign species occurrence data to different folders based on a minimum number of occurrence records
 #'
 #' @param base_directory A character string specifying the directory where to store the outputs of the workflow
 #' @param species_directory A character string specifying the directory where are stored the species occurrence records.
@@ -10,7 +10,7 @@
 #' @param nchunk A numeric integer specifying the number of chunks in which the vector of species names must be divided. Must be > 1 to enable parallel processing.
 #' @param ncores A numeric integer specifying the number of cores (or CPU's) to use in case of parallel processing. Default is `number of cores available` - 1.
 #' @export
-sortByAvailableRecords <- function(base_directory, species_directory, env_directory, algorithm, min_occ_envmodel=10, min_occ_geomodel=3, nchunk=20, tolerance=5, ncores=NULL, verbose=FALSE){
+group_by_occ <- function(base_directory, species_directory, env_directory, algorithm, min_occ_envmodel=10, min_occ_geomodel=3, nchunk=20, tolerance=5, ncores=NULL, verbose=FALSE){
 
   cat("\n")
   if(verbose) cat(">...checking input directories...")
@@ -53,15 +53,11 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
 
   ncores = if(is.null(ncores)) parallel::detectCores()-1 else min(ncores, parallel::detectCores()) # number of cores to use
 
-  #if(verbose) cat("> ...split species files list in ",nchunk,"chunks and sort species by number of occurrence records...")
-
-  #species_split_list <- chunk2(list.species, nchunk)
-
   if(length(list.species)>1)
     doParallel::registerDoParallel(ncores)
   else foreach::registerDoSEQ()
 
-  assigned <- foreach::foreach(f=list.species, .packages=c("data.table","UsefulPlants","raster","dplyr"), .combine="c") %dopar% {
+  assigned <- foreach::foreach(f=list.species, .packages=c("data.table","rsdm","raster","dplyr"), .combine="c") %dopar% {
 
       dat <- try(data.table::fread(f), silent=TRUE)
 
@@ -115,7 +111,7 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
                   to=file.path(dn, basename(f)))
       }
 
-      # if the species has enough points for modelling with environmental variables
+      # if the species has enough points for models using environmental variables
       has_enough_data <- FALSE
       if(npts >= min_occ_envmodel){
 
@@ -131,7 +127,7 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
         if(inherits(env_layers,'try-error')){
           cat(env_layers)
           warning("Unable to read the environmental layers.
-                  The occurrence data will not be write in environmental models folders.")
+                  The occurrence data will not be written into the folders for environmental models.")
           # if(any(repeated))
           #   dat <- dat[!repeated,]
           #
@@ -177,7 +173,7 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
         }
       }
 
-      # if the species does not have enough points for modelling based on environmental variables
+      # if the species does not have enough points for models using environmental variables
       if( (npts >=min_occ_geomodel & npts < min_occ_envmodel) | (!has_enough_data & npts >=min_occ_geomodel) ){
 
         dirs_created <- init_model_directory(base_directory, type="geographic", algorithm="geo_dist")
@@ -199,7 +195,7 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
         }
       }
 
-      # if the species does not have enough points for modelling based on geographic distance
+      # if the species does not have enough points for models based on geographic distance
       if(npts < min_occ_geomodel){
 
         dirs_created <- init_model_directory(base_directory, type="point", algorithm="point")
@@ -240,6 +236,3 @@ sortByAvailableRecords <- function(base_directory, species_directory, env_direct
 
 }
 
-#' helper function that split a vector x in n chunks of approximatively equal size
-#' @export
-chunk2 <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))

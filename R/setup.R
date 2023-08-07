@@ -1,16 +1,17 @@
-#' Initialize SDM output directories
+#' Initialise the  folder structure of SDMs' outputs
 #'
 #' Creates directories that will contain the outputs of the workflow
 #'
 #' @param base_directory A character string specifying the directory where to store the outputs of the workflow
 #' @param species_directory A character string specifying the directory where are stored the species occurrence records.
 #' @param env_directory A character string specifying the directory where are stored the environmental layers.
-#' @param verbose A logical. Default is `TRUE`.
+#' @param verbose A logical. Should messages be displayed ? Default is `TRUE`.
+#' @param force_sorting A logical. Should the sorting of occurrence records be repeated ? Only useful if `species_directory` contains new or updated occurrence data. Default is `FALSE`.
 #' @return None
 #' @export
 init_main_directories <- function(base_directory, species_directory, env_directory, verbose=TRUE, force_sorting=FALSE, ...){
 
-  if(verbose) cat("> ...checking input directories...")
+  if(verbose) message("> ...checking input directories...")
   # ensure all arguments are provided
   if(missing(base_directory)){
     cat("FAILED\n")
@@ -22,7 +23,7 @@ init_main_directories <- function(base_directory, species_directory, env_directo
   }
   if(missing(env_directory)){
     cat("\n")
-    warning("The directory with environmental layers is missing. You will not be able to run environmnental niche models, but only geographic models for your species.")
+    warning("The directory with the environmental layers is missing. You will not be able to run environmnental niche models, but only distance-based models for your species.")
   }
 
   # ensure that the directories provided exist
@@ -68,7 +69,7 @@ init_main_directories <- function(base_directory, species_directory, env_directo
   files_to_remove <- list.files(base_directory, pattern="\\.csv$", recursive=TRUE, full.names=TRUE)
   has_data <-length(files_to_remove)>0L
   if(has_data){
-    warning("The base directory already contain data.") #
+    warning("The base directory already contains data."); flush.console()
   }
 
   list_args <- list(base_directory, species_directory)
@@ -87,19 +88,19 @@ init_main_directories <- function(base_directory, species_directory, env_directo
       if(any(!files.removed))
         cat("FAILED\n")
       else
-        cat("OK\n")
+        cat("OK")
       if(verbose) cat("> ...Sorting species by number of occurrence records available for different modelling strategies...")
       do.call(sortByAvailableRecords, list_args)
       if(verbose) cat("OK\n")
     }
     else{
-      if(verbose) cat("> ...No sorting required...\n")
+      if(verbose) message("> ...No sorting required...")
     }
 
   }
   else{
-    if(verbose) cat("> ...Sorting species by number of occurrence records available for different modelling strategies...")
-    do.call(sortByAvailableRecords, list_args)
+    if(verbose) cat("> ...Grouping species by the number of occurrence records available for different modelling strategies...")
+    do.call(group_by_occ, list_args)
     if(verbose) cat("OK\n")
   }
 

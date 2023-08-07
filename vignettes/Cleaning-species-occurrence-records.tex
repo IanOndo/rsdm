@@ -1,0 +1,456 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\usepackage{tcolorbox}
+
+\definecolor{mybluebackground}{HTML}{e7f3fe}
+\definecolor{mybluecolor}{HTML}{31708f}
+\definecolor{myblueborder}{HTML}{bce8f1}
+\definecolor{mybrownbackground}{HTML}{f9f0e4}
+\definecolor{mybrowncolor}{HTML}{8a6d3b}
+\definecolor{mybrownborder}{HTML}{faebcc}
+
+\newtcolorbox{infobox}{
+  colback=mybluebackground,
+  colframe=myblueborder,
+  coltext=mybluecolor,
+  boxsep=3pt,
+  boxrule=1pt,
+  arc=4pt}
+
+\newtcolorbox{warningbox}{
+  colback=mybrownbackground,
+  colframe=mybrownborder,
+  coltext=mybrowncolor,
+  boxsep=3pt,
+  boxrule=1pt,
+  arc=4pt}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\floatplacement{figure}{H}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Cleaning species occurrence records},
+  pdfauthor={Ian Ondo},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Cleaning species occurrence records}
+\author{Ian Ondo}
+\date{2023-05-30}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\begin{warningbox}
+
+\textbf{Package notes:}\\
+We need to install the following set of R packages to successfully run
+the codes in this vignette:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{CoordinateCleaner} (Zizka et al. 2019)
+\item
+  \textbf{rWCVP} (Brown et al. 2023)
+\item
+  \textbf{dplyr} (Wickham et al. 2023)
+\end{itemize}
+
+\end{warningbox}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Cleaning and filtering out data that look spurious or do not fit the
+purpose of a study is probably the most important step in any data
+science project. It is generally a good idea to start your data curation
+by general filters that would exclude observations that do not fit the
+scope of your study, such as records out of their expected spatial and
+temporal range. Then, use more specific filters to refine your
+selection.
+
+In this vignette, we are going to use the World Checklist of Vascular
+Plants (WCVP) (Govaerts et al. 2021) distribution data and the R package
+\href{https://cran.r-project.org/web/packages/CoordinateCleaner/CoordinateCleaner.pdf}{\textbf{\textcolor{blue}{\underline{CoordinateCleaner}}}},
+to exclude occurrence locations outside of species known range and
+common georeferencing errors.
+
+\hypertarget{cleaning-records-outside-of-species-range}{%
+\section{\texorpdfstring{\emph{Cleaning records outside of species
+range}}{Cleaning records outside of species range}}\label{cleaning-records-outside-of-species-range}}
+
+Let's assume that
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\NormalTok{clean0 }\OtherTok{\textless{}{-}}\NormalTok{ TDWG}\SpecialCharTok{::}\FunctionTok{rangeCleaner}\NormalTok{(mySpecies\_occurrences,}
+                   \AttributeTok{what=}\StringTok{\textquotesingle{}occurrences\textquotesingle{}}\NormalTok{,}
+                   \AttributeTok{working\_dir=}\NormalTok{OUTPUT\_DIR,}
+                   \AttributeTok{status=}\StringTok{\textquotesingle{}both\textquotesingle{}}\NormalTok{,}
+                   \AttributeTok{initial\_level=}\DecValTok{2}\NormalTok{,}
+                   \AttributeTok{do.parallel=}\ConstantTok{FALSE}\NormalTok{,}
+                   \AttributeTok{use\_name\_matching=}\ConstantTok{FALSE}\NormalTok{,}
+                   \AttributeTok{full\_data =} \ConstantTok{TRUE}\NormalTok{,}
+                   \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{cleaning-unfit-and-mis-georefenced-records}{%
+\section{\texorpdfstring{\emph{Cleaning unfit and mis-georefenced
+records}}{Cleaning unfit and mis-georefenced records}}\label{cleaning-unfit-and-mis-georefenced-records}}
+
+We use metadata information kept from our primary downloads to exclude
+locations:
+
+\begin{itemize}
+\tightlist
+\item
+  collected before 1945
+\item
+  with coordinates out of their expected range (i.e.~with Lat
+  \notin [-90,90] and Lon \notin [-180,180])
+\item
+  with coordinates uncertainty \textless= 20km
+\item
+  with no decimal place (i.e.~rounded)
+\end{itemize}
+
+Then, \textbf{CoordinateCleaner} to exclude locations:
+
+\begin{itemize}
+\tightlist
+\item
+  with zero coordinates
+\item
+  with identical latitude/longitude
+\item
+  within 10km buffer distance from centroids of countries, provinces,
+  capitals or biodiversity institutions (museums, zoos, botanical
+  gardens, universities)
+\item
+  within 1km buffer distance from the headquarters of GBIF
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 1. Remove records beyond a certain date}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean0 }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(year) }\SpecialCharTok{|}\NormalTok{ year }\SpecialCharTok{\textgreater{}=} \DecValTok{1945}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 2. Remove cultivated specimens}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\# clean \textless{}{-} clean \%\textgreater{}\%}
+\CommentTok{\#}
+\CommentTok{\#   dplyr::filter(is.na(is\_cultivated\_observation) | is\_cultivated\_observation == "Yes"}
+\CommentTok{\#                 \& is.na(basisOfRecord) | basisOfRecord!= "Cultivated habitat")}
+\CommentTok{\#}
+\CommentTok{\# if(nrow(clean)==0) return(NULL)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 3. Remove (un/mis{-})georeferenced specimens}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(decimalLongitude)) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(decimalLatitude)) }\SpecialCharTok{\%\textgreater{}\%}
+
+  \CommentTok{\# Occurences with impossible lat{-}long coordinates}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(decimalLatitude }\SpecialCharTok{\textless{}} \DecValTok{90} \SpecialCharTok{|}\NormalTok{ decimalLatitude }\SpecialCharTok{\textgreater{}} \SpecialCharTok{{-}}\DecValTok{90} \SpecialCharTok{|}
+\NormalTok{                  decimalLongitude }\SpecialCharTok{\textless{}} \DecValTok{180} \SpecialCharTok{|}\NormalTok{ decimalLongitude }\SpecialCharTok{\textgreater{}} \SpecialCharTok{{-}}\DecValTok{180}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 4. Remove coordinates with large uncertainty in m}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(coordinateUncertaintyInMeters }\SpecialCharTok{\textless{}=} \DecValTok{20000} \SpecialCharTok{|}
+                  \FunctionTok{is.na}\NormalTok{(coordinateUncertaintyInMeters))}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 5. Remove coordinates with no decimal place (rounded)}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{((decimalLongitude}\SpecialCharTok{*}\DecValTok{10}\NormalTok{) }\SpecialCharTok{\%\%} \DecValTok{10} \SpecialCharTok{!=} \DecValTok{0}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{((decimalLatitude}\SpecialCharTok{*}\DecValTok{10}\NormalTok{) }\SpecialCharTok{\%\%} \DecValTok{10} \SpecialCharTok{!=} \DecValTok{0}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 6. Clean records whose individual counts are 0s}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(individualCount }\SpecialCharTok{\textgreater{}} \DecValTok{0} \SpecialCharTok{|} \FunctionTok{is.na}\NormalTok{(individualCount)) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{filter}\NormalTok{(individualCount }\SpecialCharTok{\textless{}} \DecValTok{99} \SpecialCharTok{|} \FunctionTok{is.na}\NormalTok{(individualCount))}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available information in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#=========================================================}
+\DocumentationTok{\#\#}
+\DocumentationTok{\#\#=  Start CoordinateCleaner cleaning process}
+\DocumentationTok{\#\#}
+\CommentTok{\#=========================================================}
+\CommentTok{\# Rename lon/lat fields}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimallongitude =} \StringTok{\textquotesingle{}decimalLongitude\textquotesingle{}}\NormalTok{, }\AttributeTok{decimallatitude =} \StringTok{\textquotesingle{}decimalLatitude\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 7. Clean records with 0 long and lat}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_zero}\NormalTok{(}\AttributeTok{buffer =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 8. Clean records with equal latitude and longitude}
+\CommentTok{\#      coordinates, either exact or absolute}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_equ}\NormalTok{(}\AttributeTok{test =} \StringTok{"absolute"}\NormalTok{, }\AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 9. Clean records outside reported country}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{\# clean \textless{}{-} clean \%\textgreater{}\%}
+\CommentTok{\#}
+\CommentTok{\#   CoordinateCleaner::cc\_coun(iso3=\textquotesingle{}countryCode\textquotesingle{}, ref=NULL, verbose=FALSE)}
+\CommentTok{\#}
+\CommentTok{\# if(nrow(clean)==0) stop(\textquotesingle{}No more records available in the dataset\textquotesingle{})}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 10. Clean records with country and province centroids}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_cen}\NormalTok{(}\AttributeTok{buffer =} \DecValTok{10000}\NormalTok{,}
+                            \AttributeTok{geod=}\ConstantTok{TRUE}\NormalTok{,}
+                            \AttributeTok{test=}\StringTok{\textquotesingle{}both\textquotesingle{}}\NormalTok{,}
+                            \AttributeTok{species=}\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{,}
+                            \AttributeTok{ref=}\ConstantTok{NULL}\NormalTok{,}
+                            \AttributeTok{verify=}\ConstantTok{FALSE}\NormalTok{, }
+                            \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 11. Clean records in country capitals}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_cap}\NormalTok{(}\AttributeTok{buffer =} \DecValTok{10000}\NormalTok{,}
+                            \AttributeTok{geod=}\ConstantTok{TRUE}\NormalTok{,}
+                            \AttributeTok{species=}\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{,}
+                            \AttributeTok{ref=}\ConstantTok{NULL}\NormalTok{,}
+                            \AttributeTok{verify=}\ConstantTok{FALSE}\NormalTok{,}
+                            \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 12. Clean records with institutional coordinates}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_inst}\NormalTok{(}\AttributeTok{buffer =} \DecValTok{10000}\NormalTok{,}
+                             \AttributeTok{geod=}\ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{species=}\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{,}
+                             \AttributeTok{verify=}\ConstantTok{FALSE}\NormalTok{,}
+                             \AttributeTok{verify\_mltpl =} \DecValTok{10}\NormalTok{,}
+                             \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\DocumentationTok{\#\#= 13. Clean records with GBIF HQ coordinates}
+\CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  CoordinateCleaner}\SpecialCharTok{::}\FunctionTok{cc\_gbif}\NormalTok{(}\AttributeTok{buffer =} \DecValTok{1000}\NormalTok{,}
+                             \AttributeTok{geod=}\ConstantTok{TRUE}\NormalTok{,}
+                             \AttributeTok{species=}\StringTok{\textquotesingle{}species\textquotesingle{}}\NormalTok{,}
+                             \AttributeTok{verify=}\ConstantTok{FALSE}\NormalTok{,}
+                             \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
+
+\ControlFlowTok{if}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(clean)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{) }\FunctionTok{stop}\NormalTok{(}\StringTok{\textquotesingle{}No more records available in the dataset\textquotesingle{}}\NormalTok{)}
+
+\CommentTok{\#=========================================================}
+\DocumentationTok{\#\#}
+\DocumentationTok{\#\#=  End CoordinateCleaner cleaning process}
+\DocumentationTok{\#\#}
+\CommentTok{\#=========================================================}
+\CommentTok{\# Rename lon/lat fields}
+\NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimalLongitude =} \StringTok{\textquotesingle{}decimallongitude\textquotesingle{}}\NormalTok{, }\AttributeTok{decimalLatitude =} \StringTok{\textquotesingle{}decimallatitude\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-rwcvp}{}}%
+Brown, Matilda J. M., Barnaby E. Walker, Nicholas Black, Rafaël
+Govaerts, Ian Ondo, Robert Turner, and Eimear Nic Lughadha. 2023.
+{``rWCVP: A Companion r Package to the World Checklist of Vascular
+Plants.''} \emph{New Phytologist}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-WCVP}{}}%
+Govaerts, R., E. Nic Lughadha, N. Black, R. Turner, and A. Paton. 2021.
+{``The World Checklist of Vascular Plants, a Continuously Updated
+Resource for Exploring Global Plant Diversity.''} Journal Article.
+\emph{Sci Data} 8 (1): 215.
+\url{https://doi.org/10.1038/s41597-021-00997-6}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-dplyr}{}}%
+Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis
+Vaughan. 2023. \emph{Dplyr: A Grammar of Data Manipulation}.
+\url{https://CRAN.R-project.org/package=dplyr}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-CCleaner}{}}%
+Zizka, Alexander, Daniele Silvestro, Tobias Andermann, Josue Azevedo,
+Camila Duarte Ritter, Daniel Edler, Harith Farooq, et al. 2019.
+{``CoordinateCleaner: Standardized Cleaning of Occurrence Records from
+Biological Collection Databases.''} \emph{Methods in Ecology and
+Evolution}, no. 10: --7. \url{https://doi.org/10.1111/2041-210X.13152}.
+
+\end{CSLReferences}
+
+\end{document}
