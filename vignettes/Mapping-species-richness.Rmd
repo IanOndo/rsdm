@@ -83,7 +83,7 @@ Here, we are going to use the outputs of the modelling of @UsefulPlants, which c
 ```{r load-species-distribution-object, echo=TRUE, warning=FALSE, eval=FALSE, include=TRUE, fig.pos="H"}
 
 # load the distribution object
-species_proba_per_cell <- readRDS('path/to/species_proba_per_cell.rds') # this may take a while, so be patient!
+species_proba_per_cell <- readRDS('path/to/species_proba_per_cell.rds') # this may take a while!
 data.table::setkey(species_proba_per_cell, species) # enable fast binary search of species
 
 species_proba_per_cell
@@ -102,10 +102,9 @@ We are going to use the list of useful plants and an environmental raster layer 
 ```{r reconstruct-one-map, echo=TRUE, warning=FALSE, eval=FALSE, include=TRUE, fig.pos="H"}
 
 # select the species you would like to get the distribution for 
-my_species_ID  <- UsefulPlants:::usefulplants |> # list of useful plants (already ordered by species names)
-  dplyr::mutate(ID=dplyr::row_number()) |> # calculate a row id
-  dplyr::filter(binomial_acc_name=="Acacia cowleana") |>  # select Acacia cowleana
-  dplyr::pull(ID) # extract its row index number
+my_species_ID  <- UsefulPlants:::usefulplants |> # list of useful plants
+  dplyr::filter(binomial_acc_name=="Acacia cowleana") |># select Acacia cowleana
+  dplyr::pull(plant_ID) # extract its identifier number
 
 # extract the species probability of occurrence   
 my_species_probas <- species_proba_per_cell[J(my_species_ID)]
@@ -114,7 +113,8 @@ my_species_probas <- species_proba_per_cell[J(my_species_ID)]
 valid.cells <- !is.na(my_species_probas[['cell']])
 
 # create an empty raster 
-rast_ref <- terra::rast(system.file("extdata","sdm_env_raster_layers.tif",package="UsefulPlants"))[[1]]
+rast_ref <- terra::rast(system.file("extdata","sdm_env_raster_layers.tif",
+                                    package="UsefulPlants"))[[1]]
 my_species_distribution <- rast_ref
 
 # make sure to mask out the original values
@@ -125,9 +125,12 @@ my_species_distribution[my_species_probas[['cell']][valid.cells]] <-
   my_species_probas[['proba']][valid.cells]
 
 # optionally restrict the map extent to fit the species distribution and save the results
-ext <- raster::rasterFromCells(raster::raster(my_species_distribution), my_species_probas[['cell']][valid.cells], values=FALSE) |>
+ext <- raster::rasterFromCells(raster::raster(my_species_distribution),
+                               my_species_probas[['cell']][valid.cells],
+                               values=FALSE) |>
   terra::extend(c(2,2)) # extend with a number of rows and columns (2 at each side)
-terra::crop(my_species_distribution, terra::rast(ext), filename="Acacia_cowleana.tif", overwrite=TRUE)
+terra::crop(my_species_distribution, terra::rast(ext),
+            filename="Acacia_cowleana.tif", overwrite=TRUE)
 
 # or save directly your map using the global extent
 terra::writeRaster(my_species_distribution, "Acacia_cowleana.tif", overwrite=TRUE)
@@ -314,7 +317,7 @@ fig1_ann <- ggpubr::annotate_figure(fig1,
 
 ```
 
-```{r plot-species-richness-maps, warning=FALSE, echo=FALSE, eval=TRUE, include=TRUE, fig.cap="Global distribution of utilised plant species richness. \\textbold{Panel A} shows the number of utilised plant species predicted per 400km^2 grid cell. \\textbold{Panel B} shows the standard deviation.", fig.pos="H", fig.show='hold', fig.align='center'}
+```{r plot-species-richness-maps, warning=FALSE, echo=FALSE, eval=TRUE, include=TRUE, fig.cap="Global distribution of utilised plant species richness. Panel A shows the number of utilised plant species predicted per 400km2 grid cell. Panel B shows the standard deviation", fig.pos="H", fig.show='hold', fig.align='center'}
 knitr::include_graphics(c("H:/Useful_Plants_2/SR_andSD.png"))
 ```
 
@@ -357,7 +360,7 @@ predicted_weighted_endemism[predicted_weighted_endemism[['cell']][valid.cells]] 
 m <- raster::rasterToPoints(predicted_weighted_endemism) %>%
   as.data.frame()
 
-weplt <- m2 %>%
+weplt <- m %>%
   ggplot2::ggplot() +
   ggplot2::geom_raster(ggplot2::aes(x=x,y=y,fill=log(WE+1))) +
   ggplot2::theme_classic() +
@@ -381,7 +384,7 @@ weplt
 
 ```
 
-```{r plot-weighted-endemism, warning=FALSE, echo=FALSE, eval=TRUE, include=TRUE, fig.cap="Global distribution of utilised plant species endemism. the map shows the endemism predicted per 400km^2 grid cell.", fig.pos="H", fig.show='hold', fig.align='center'}
+```{r plot-weighted-endemism, warning=FALSE, echo=FALSE, eval=TRUE, include=TRUE, fig.cap="Global distribution of utilised plant species endemism. the map shows the endemism predicted per 400km2 grid cell.", fig.pos="H", fig.show='hold', fig.align='center'}
 knitr::include_graphics(c("H:/Useful_Plants_2/WE.png"))
 ```
 

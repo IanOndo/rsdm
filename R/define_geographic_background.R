@@ -923,7 +923,7 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
   if(!file_flag & !data_flag)
     stop('Unable to read input data. Please provide valid input data')
 
-  if(data_flag && inherits(bg_dat,"sf") && !sf::st_dimension(bg_dat)==2)
+  if(data_flag && inherits(bg_dat,"sf") && !all(sf::st_dimension(bg_dat)==2))
     stop("bg_dat must be a sf (multi)polygon object.")
 
   if(is.null(output_name)){
@@ -972,8 +972,8 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
       polygons_ <- RGeodata:::biomes %>%
         sf::st_cast(., "POLYGON", warn=FALSE)
     }else{
-      polygons_ <- RGeodata::ecoregions %>%
-        sf::st_cast(., "POLYGON", warn=FALSE)
+      polygons_ <- RGeodata:::ecoregions_split#RGeodata::ecoregions %>%
+        #sf::st_cast(., "POLYGON", warn=FALSE)
     }
   )
   # condition 1: polygons must be inside the bounding box of the input spatial object

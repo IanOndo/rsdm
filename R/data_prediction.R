@@ -238,6 +238,7 @@ project_geoModel <- function(domain, model, output_directory, project_res=NULL, 
   # predict the probability of species occurrence at grid points
   #r  <- tryCatch(raster::raster(domain, res = grid_res), error=function(err) raster::raster(as(domain,"Spatial"), res = grid_res))
   #out_vals <- raster::predict(model, pred_grid[!is.na(out_cells),])
+  if(!"gstat" %in% loadedNamespaces()) require(gstat)
   out <- dismo::predict(model, domain)
 
   # assign predicted values to grid point cells
