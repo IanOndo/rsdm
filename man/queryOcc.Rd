@@ -5,8 +5,7 @@
 \title{Query Species Occurrences}
 \usage{
 queryOcc(
-  species_name = system.file("extdata/List_of_useful_plant_name.txt", package =
-    "UsefulPlants"),
+  species_name = NULL,
   data_sources = c("gbif", "bien"),
   download_dir = "",
   output_dir = "",
@@ -17,7 +16,7 @@ queryOcc(
 \arguments{
 \item{species_name}{Either a vector of species names or a csv file where species names are stored in the first column.}
 
-\item{data_sources}{A (vector) character string of the database to search for occurrence data. Must be either `gbif` or `bien` or both for now.}
+\item{data_sources}{A (vector of) character string of the name of the database to search for occurrence data. Must be either `gbif` or `bien` or both for now.}
 
 \item{download_dir}{A directory where to save species occurrence records data downloaded from online databases.}
 

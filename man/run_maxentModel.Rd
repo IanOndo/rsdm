@@ -24,8 +24,6 @@ run_maxentModel(
 Default is `NULL` i.e. projection will use environmental layers provided for calibration.}
 
 \item{...}{Additional parameters to be passed to \code{block_cv_maxent} or \code{make_geographic_block}}
-
-\item{algorithm}{A character string specifying the name of the algorithm to use.}
 }
 \value{
 An integer number. `0` in case of success otherwise return `-1`

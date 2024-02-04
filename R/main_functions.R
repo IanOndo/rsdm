@@ -3,7 +3,6 @@
 #' Uses masked geographically structured cross-validation method for evaluating and selecting a maxent model
 #'
 #' @param loc_dat A character string specifying the path to a csv file with longitude and latitude coordinates of occurrence records.
-#' @param algorithm A character string specifying the name of the algorithm to use.
 #' @param outputdir A character string specifying the directory where to save the raster of interpolated values.
 #' @param newdata A character string specifying the directory where the new environmental raster layers for projection are stored.
 #' Default is `NULL` i.e. projection will use environmental layers provided for calibration.
@@ -321,8 +320,9 @@ run_geoModel <- function(loc_dat, species_name=NULL, algorithm="idw", outputdir,
       return(-1)
     }
     bg_domain <- readRDS(out_bg_fn)
-
-    r  <- tryCatch(raster::raster(bg_domain, res = train_res), error=function(err) raster::raster(as(bg_domain,"Spatial"), res = train_res))
+    bg_domain %<>%
+      sf::st_buffer(project_res)
+    r  <- tryCatch(raster::raster(bg_domain , res = train_res), error=function(err) raster::raster(as(bg_domain,"Spatial"), res = train_res))
     projected_domain <- suppressMessages(fasterize::fasterize(sf::st_cast(bg_domain,"MULTIPOLYGON"), r, fun="count"))
     #r <- raster::raster(bg_domain, res = train_res)
     #projected_domain <- fasterize::fasterize(sf::st_cast(bg_domain,"MULTIPOLYGON"), r, fun="count")

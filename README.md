@@ -4,7 +4,7 @@
 
 ## *Installation*
 
-Make sure to have [*R*](https://cloud.r-project.org/ "R") or [*Rstudio*](https://rstudio.com/products/rstudio/download/ "Rstudio") installed on your machine. Some R packages need to be compiled from source, so if you are on Windows, you need to install [*Rtools*](http://cran.r-project.org/bin/windows/Rtools/) too.\\
+Make sure to have [*R*](https://cloud.r-project.org/ "R") or [*Rstudio*](https://rstudio.com/products/rstudio/download/ "Rstudio") installed on your machine. Some R packages need to be compiled from source, so if you are on Windows, you need to install [*Rtools*](http://cran.r-project.org/bin/windows/Rtools/) too.\
 
 Install *rsdm* with the following instructions. If the package `devtools` is not already installed run `install.packages("devtools")` in your console. Setting `R_REMOTES_NO_ERRORS_FROM_WARNINGS="false` will cause warning messages during calls to `devtools::install_github` to become errors. So beforehand, make sure to set this environmental variable to `true` via:
 
