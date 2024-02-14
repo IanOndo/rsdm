@@ -186,7 +186,7 @@ runs <-mclapply(speciesList, function(j){
   # OPTIONS #
   ###########
   memory.limit(90000)	# Increase size memory allocated
-  raster::rasterOptions(chunksize = 2e+05, maxmemory = 2e+07, todisk=FALSE)
+  terraOptions(chunksize = 2e+05, maxmemory = 2e+07, todisk=FALSE)
 
   algo = speciesAlgo[match(j, speciesList)]
 
@@ -199,7 +199,7 @@ runs <-mclapply(speciesList, function(j){
                                               outputdir = file.path(BASE_DIR,"envModels","maxent"),
                                               do.map=TRUE,
                                               maxent_settings = maxent_settings,
-                                              grid_res =grid_res = max(0.008333335, geographic_grid_resolution/2),
+                                              grid_res = max(0.008333335, geographic_grid_resolution/2),
                                               varying_parameter_name="betamultiplier",
                                               verbose=TRUE),
 
@@ -220,13 +220,13 @@ runs <-mclapply(speciesList, function(j){
   )},silent=TRUE)
 
   if(inherits(out,'try-error')){
-    cat(out)
+    message(out)
     gc()
-    raster::removeTmpFiles(h=72)
+    rmv <- terra::tmpFiles(orphan=TRUE,remove=TRUE)
     j
   }
   gc()
-  raster::removeTmpFiles(h=72)
+  rmv <- terra::tmpFiles(orphan=TRUE,remove=TRUE)
 }, mc.cores=MC_CORES, mc.preschedule = FALSE)
 finished.at = Sys.time()
 time.elapsed <- finished.at - started.at

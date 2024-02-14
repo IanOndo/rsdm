@@ -117,10 +117,10 @@
 
 \usepackage{tcolorbox}
 
-\definecolor{mybluebackground}{HTML}{d9edf7}
+\definecolor{mybluebackground}{HTML}{e7f3fe}
 \definecolor{mybluecolor}{HTML}{31708f}
 \definecolor{myblueborder}{HTML}{bce8f1}
-\definecolor{mybrownbackground}{HTML}{fcf8e3}
+\definecolor{mybrownbackground}{HTML}{f9f0e4}
 \definecolor{mybrowncolor}{HTML}{8a6d3b}
 \definecolor{mybrownborder}{HTML}{faebcc}
 
@@ -129,7 +129,7 @@
   colframe=myblueborder,
   coltext=mybluecolor,
   boxsep=3pt,
-  boxrule=2pt,
+  boxrule=1pt,
   arc=4pt}
 
 \newtcolorbox{warningbox}{
@@ -137,7 +137,7 @@
   colframe=mybrownborder,
   coltext=mybrowncolor,
   boxsep=3pt,
-  boxrule=2pt,
+  boxrule=1pt,
   arc=4pt}
 
 \usepackage{amsmath}
@@ -160,7 +160,7 @@
 
 \title{Modelling species distribution}
 \author{Ian Ondo}
-\date{2023-05-22}
+\date{2024-02-04}
 
 \begin{document}
 \maketitle
@@ -187,8 +187,6 @@ the codes in this vignette:
   \textbf{ade4} (Dray, Dufour, and Chessel 2007)
 \item
   \textbf{ggplot2} (Wickham 2016)
-\item
-  \textbf{kableExtra} (Zhu 2023)
 \item
   \textbf{dplyr} (Wickham et al. 2023)
 \end{itemize}
@@ -277,17 +275,17 @@ area}}{Defining the training area}}\label{defining-the-training-area}}
 
 We need to delineate the geographic area in which we will train our
 model. This training area should ideally represent the environmental
-conditions available or accessible to the species. In
-\textbf{UsefulPlants}, it extends to the boundaries of the biomes or
-ecoregions where species' occurrence locations were found. We are going
-to use the function \texttt{make\_geographic\_domain} which relies on
-\emph{Terrestrial Ecoregions Of the World} (TEOW) and some user-defined
-settings to create the training area from our occurrence data points.
+conditions available or accessible to the species. In \textbf{rsdm}, it
+extends to the boundaries of the biomes or ecoregions where species'
+occurrence locations were found. We are going to use the function
+\texttt{make\_geographic\_domain} which relies on \emph{Terrestrial
+Ecoregions Of the World} (TEOW) and some user-defined settings to create
+the training area from our occurrence data points.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 
-\FunctionTok{library}\NormalTok{(UsefulPlants)}
+\FunctionTok{library}\NormalTok{(rsdm)}
 
 \CommentTok{\# create your training area}
 \NormalTok{my\_training\_area }\OtherTok{\textless{}{-}} \FunctionTok{make\_geographic\_domain}\NormalTok{(}
@@ -626,10 +624,10 @@ Anderson, and Schapire 2006).
 \end{Highlighting}
 \end{Shaded}
 
-In \textbf{UsefulPlants}, MaxEnt is tuned and evaluated using the
-\emph{masked geographically structured approach} (Radosavljevic and
-Anderson 2014), which is a variant of the \emph{k-fold} cross-validation
-that provides a better ability to detect over-fitting.
+In \textbf{rsdm}, MaxEnt is tuned and evaluated using the \emph{masked
+geographically structured approach} (Radosavljevic and Anderson 2014),
+which is a variant of the \emph{k-fold} cross-validation that provides a
+better ability to detect over-fitting.
 
 \hypertarget{data-partitioning}{%
 \subsection{\texorpdfstring{\emph{Data
@@ -641,6 +639,9 @@ approximately the same number of points.
 
 \begin{Shaded}
 \begin{Highlighting}[]
+
+\CommentTok{\# get raster grid resolution}
+\NormalTok{grid\_res }\OtherTok{=}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{res}\NormalTok{(env\_data\_selected[[}\DecValTok{1}\NormalTok{]])[}\DecValTok{1}\NormalTok{]}
 
 \CommentTok{\# (optional) rasterise the training area}
 \NormalTok{raster\_template  }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
@@ -663,7 +664,7 @@ approximately the same number of points.
 \NormalTok{my\_geo\_blocks }\OtherTok{=} \FunctionTok{make\_geographic\_block}\NormalTok{(occ\_data, }\CommentTok{\# occurrence records data}
                       \AttributeTok{k =}\NormalTok{ K,                    }\CommentTok{\# number of geographic blocks}
                       \AttributeTok{bg =}\NormalTok{ bg,                  }\CommentTok{\# optional (i.e. can be left out)}
-                      \AttributeTok{grid\_res =} \FloatTok{0.1666667}\NormalTok{,     }\CommentTok{\# resolution in decimal lat/lon}
+                      \AttributeTok{grid\_res =}\NormalTok{grid\_res,       }\CommentTok{\# resolution in decimal degree lat/lon}
                       \AttributeTok{sf=}\ConstantTok{TRUE}\NormalTok{,                  }\CommentTok{\# return a sf object}
                       \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)            }\CommentTok{\# run quietly}
 \end{Highlighting}
@@ -755,14 +756,14 @@ overall performance given the evaluation metrics selected.
 \CommentTok{\# compute density}
 \NormalTok{dens }\OtherTok{\textless{}{-}}\NormalTok{ MASS}\SpecialCharTok{::}\FunctionTok{kde2d}\NormalTok{(pres\_locs[,}\DecValTok{1}\NormalTok{], pres\_locs[,}\DecValTok{2}\NormalTok{],}
                     \AttributeTok{n =} \FunctionTok{c}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(rasterized\_occ), }\FunctionTok{ncol}\NormalTok{(rasterized\_occ)),}
-                    \AttributeTok{h=}\DecValTok{2}\NormalTok{) }\CommentTok{\# bandwidth}
+                    \AttributeTok{h =} \DecValTok{2}\NormalTok{) }\CommentTok{\# bandwidth}
 \NormalTok{dens\_rast }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{raster}\NormalTok{(dens)}
 
 \CommentTok{\# make sure the raster matches the training area raster}
 \NormalTok{biasrast }\OtherTok{\textless{}{-}}\NormalTok{ raster}\SpecialCharTok{::}\FunctionTok{resample}\NormalTok{(dens\_ras, bg, }\AttributeTok{method=}\StringTok{"ngb"}\NormalTok{)}
 
 \CommentTok{\# save to temporary folder}
-\NormalTok{sampbias\_fn }\OtherTok{\textless{}{-}} \FunctionTok{file.path}\NormalTok{(maxent\_output\_dir,}\StringTok{"sampbiasrast.tif"}\NormalTok{)}
+\NormalTok{sampbias\_fn }\OtherTok{\textless{}{-}} \FunctionTok{file.path}\NormalTok{(maxent\_output\_dir,}\StringTok{"sampbiasrast.asc"}\NormalTok{) }\CommentTok{\# must be in ascii format for maxent}
 \NormalTok{bias\_rast }\OtherTok{\textless{}{-}} \FunctionTok{maskCover}\NormalTok{(biasrast, my\_training\_area, }\AttributeTok{filename=}\NormalTok{sampbias\_fn)}
 \CommentTok{\# rm(bias\_rast) if not needed anymore}
 
@@ -886,10 +887,6 @@ Analysis}. Springer-Verlag New York.
 Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis
 Vaughan. 2023. \emph{Dplyr: A Grammar of Data Manipulation}.
 \url{https://CRAN.R-project.org/package=dplyr}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-kableExtra}{}}%
-Zhu, Hao. 2023. \emph{kableExtra: Construct Complex Table with 'Kable'
-and Pipe Syntax}.
 
 \end{CSLReferences}
 

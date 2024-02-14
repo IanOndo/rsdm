@@ -24,7 +24,7 @@ block_cv_maxent(
 \arguments{
 \item{loc_dat}{A two-column matrix,a data.frame, a data.table or a csv file with longitude and latitude coordinates of occurrence records.}
 
-\item{env_dat}{A RasterStack object or a character string specifying the path to a directory with environmental raster layers.}
+\item{env_dat}{A RasterStack or SpatRasterDataset object or a character string specifying the path to a directory with environmental raster layers.}
 
 \item{k}{A numeric integer specifying the number of bins required.}
 

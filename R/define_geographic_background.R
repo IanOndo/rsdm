@@ -73,13 +73,21 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
     if(verbose) cat('> [...building alpha-hull...]\n')
     dot.args <- list(...)
     if(length(dot.args)>0L){
-      dot.args <-dot.args[!names(dot.args) %in% c("land_file","fraction","partCount","initialAlpha","alphaIncrement","default_buffer","maxIter","do.parallel","save.outputs")]
+      dot.args <-dot.args[!names(dot.args) %in% c("land_file",
+                                                  "fraction",
+                                                  "partCount",
+                                                  "initialAlpha",
+                                                  "alphaIncrement",
+                                                  "default_buffer",
+                                                  "maxIter",
+                                                  "do.parallel",
+                                                  "save.outputs")]
     }
     # try to guess species column
     alpha_hull <- suppressWarnings(try(do.call(AlphaHullRangeModeller::make_alpha_hulls,
                           append(list(loc_data=loc_dat, save.outputs=FALSE, verbose=FALSE), dot.args)),silent=TRUE))
     if(is.null(alpha_hull) | inherits(alpha_hull,"try-error") ){
-      cat(alpha_hull)
+      message(alpha_hull)
       stop("Unable to build an alpha hull from this set of points. See error(s).")
     }
   }
@@ -87,8 +95,8 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
     if(verbose) cat('> [...read alpha-hull from file...]\n')
     alpha_hull <- try(suppressMessages(sf::st_read(path_to_alpha_hull)), silent=TRUE)
     if(is.null(alpha_hull) | inherits(alpha_hull,'try-error') ){
-      cat(alpha_hull)
-      stop("Unable to read alpha hull from this file specified.")
+      message(alpha_hull)
+      stop("Unable to read alpha hull from the file specified.")
     }
   }
 
@@ -125,7 +133,7 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
 
   if(verbose) cat('> [...keep biomes with at least ',min_occ_number,' occurrence records inside...]\n')
 
-  num.point.by.biome <- suppressMessages(lengths(st_par_intersects(RGeodata:::biomes, sf_loc_data, nchunks=100)))
+  num.point.by.biome <- suppressMessages(lengths(st_par_intersects(sf::st_geometry(RGeodata:::biomes), sf_loc_data, nchunks=100)))
   # keep biomes with more than one occurrence records inside
   biomes.with.more.than.n.point <- RGeodata:::biomes[num.point.by.biome >= min_occ_number,]
   if(verbose) cat('> [...extract polygons from biomes containing at least ',min_occ_number,' record(s) and intersecting with the alpha hull...]\n')
@@ -150,9 +158,11 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
 
   total_area_cover<- try(as.vector(sum(sf::st_area(alpha_hull))/sum(sf::st_area(geographic_domain))), silent=TRUE)
   if(inherits(total_area_cover,"try-error")){
-    alpha_hull.sp = as(alpha_hull,"Spatial")
-    geographic_domain.sp = as(geographic_domain,"Spatial")
-    total_area_cover <- geosphere::areaPolygon(alpha_hull.sp)/geosphere::areaPolygon(geographic_domain.sp)
+    message(total_area_cover)
+    stop("Computing the total area cover failed")
+    #alpha_hull.sp = as(alpha_hull,"Spatial")
+    #geographic_domain.sp = as(geographic_domain,"Spatial")
+    #total_area_cover <- geosphere::areaPolygon(alpha_hull.sp)/geosphere::areaPolygon(geographic_domain.sp)
   }
 
   if(total_area_cover < min_area_cover){
@@ -190,8 +200,6 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
       )
       gc()
     }
-    geographic_domain #%<>%
-      #st_remove_holes()
 
     if(save_bg){
       saveRDS(geographic_domain, file.path(output_dir, paste0(output_name,".rds")))
@@ -223,13 +231,13 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
       sf::st_as_sfc()
 
     # identify best ecoregions polygons candidates (intersects)
-    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split, bounding_box, nchunks=100) %>%
+    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split, bounding_box, nchunks=100) %>%
                                             lengths() %>% `>`(.,0L))
 
     # get ecoregions of records flagged as 'unique' within the biomes
-    ecoreg_from_single_record <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.min.n.point.biome,], nchunks=100)%>%
+    ecoreg_from_single_record <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.min.n.point.biome,], nchunks=100)%>%
                                                     lengths() %>% `>`(.,0L) %>%
-                                                    RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                                    RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                     dplyr::select(ECO_NAME) %>%
                                                     dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -267,8 +275,6 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
         gc()
         if(verbose) cat('> [...Step 3 [Done]...]\n')
       }
-      geographic_domain #%<>%
-        #st_remove_holes()
 
       if(save_bg){
         saveRDS(geographic_domain, file.path(output_dir, paste0(output_name,".rds")))
@@ -302,13 +308,13 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
       sf::st_as_sfc()
 
     # identify best ecoregions polygons candidates (intersects)
-    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split, bounding_box, nchunks=100) %>%
+    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split, bounding_box, nchunks=100) %>%
                                             lengths() %>% `>`(.,0L))
 
     # retrieve ecoregions of records flagged as outside of the alpha hull
-    ecoreg_from_alpha_hull_exclusion <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.outside.alpha.hull,], nchunks=100)%>%
+    ecoreg_from_alpha_hull_exclusion <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.outside.alpha.hull,], nchunks=100)%>%
                                                            lengths() %>% `>`(.,0L) %>%
-                                                           RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                                           RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                            dplyr::select(ECO_NAME) %>%
                                                            dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -348,8 +354,6 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
         gc()
         if(verbose) cat('> [...Step 3 [Done]...]')
       }
-      geographic_domain #%<>%
-        #st_remove_holes()
 
       if(save_bg){
         saveRDS(geographic_domain, file.path(output_dir, paste0(output_name,".rds")))
@@ -384,13 +388,13 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
       sf::st_as_sfc()
 
     # identify best ecoregions polygons candidates (intersects)
-    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split, bounding_box, nchunks=100) %>%
+    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split, bounding_box, nchunks=100) %>%
                                             lengths() %>% `>`(.,0L))
 
     # retrieve ecoregions of records flagged as geographic outliers
-    ecoreg_from_outliers <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.geographic.outlier,], nchunks=100)%>%
+    ecoreg_from_outliers <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.geographic.outlier,], nchunks=100)%>%
                                                lengths() %>% `>`(.,0L) %>%
-                                               RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                               RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                dplyr::select(ECO_NAME) %>%
                                                dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -429,8 +433,6 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
         gc()
         if(verbose) cat('> [...Step 3 [Done]...]\n')
       }
-      geographic_domain #%<>%
-        #st_remove_holes()
 
       if(save_bg){
         saveRDS(geographic_domain, file.path(output_dir, paste0(output_name,".rds")))
@@ -448,8 +450,6 @@ make_geographic_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, 
     if(verbose) cat("> [...No records found...]\n")
     warning('[WARNING] ',length(sf::st_geometry(working_loc_data)),' record(s) remaining outside of the geographic range !')
   }
-  geographic_domain #%<>%
-    #st_remove_holes()
 
   if(save_bg){
     saveRDS(geographic_domain, file.path(output_dir, paste0(species_name,".rds")))
@@ -580,7 +580,7 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
     # TODO: rename alpha_hull to hull to be more general
     alpha_hull <- try(sf::st_convex_hull(sf::st_union(sf_loc_data)),silent=TRUE)
     if(inherits(alpha_hull,'try-error')){
-      cat(alpha_hull)
+      message(alpha_hull)
       stop("Unable to build convex hull from this set of points.")
     }else{
 
@@ -607,12 +607,12 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
   }
 
   if(verbose) cat('> [...keep ecoregions with more than one occurrence records inside...]\n')
-  num.point.by.ecoregion <- suppressMessages(lengths(st_par_intersects(RGeodata::ecoregions, sf_loc_data, nchunks=100)))
+  num.point.by.ecoregion <- suppressMessages(lengths(st_par_intersects(sf::st_geometry(RGeodata::ecoregions), sf_loc_data, nchunks=100)))
   # keep ecoregions with more than one occurrence records inside
   ecoregions.with.more.than.one.point <- RGeodata::ecoregions[num.point.by.ecoregion > 1,]
   if(verbose) cat('> [...extract polygons whose ecoregions contain more than one record and that intersect with the alpha hull...]\n')
   # extract polygons whose biomes contains more than one records and that intersect with the alpha hull (https://rpubs.com/sogletr/sf-ops)
-  ecoregions_more_than_one_point_geom <- RGeodata::ecoregions_split %>%
+  ecoregions_more_than_one_point_geom <- RGeodata:::ecoregions_split %>%
     dplyr::filter(ECO_NAME %in% unique(ecoregions.with.more.than.one.point$ECO_NAME))
 
   ecoregion_alpha_hull <- alpha_hull %>%
@@ -684,13 +684,13 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
       sf::st_as_sfc()
 
     # identify best ecoregions candidates (intersects)
-    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split, bounding_box, nchunks=100) %>%
+    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split, bounding_box, nchunks=100) %>%
                                             lengths() %>% `>`(.,0L))
 
     # get ecoregions of records flagged as 'unique' within the biomes
-    ecoreg_from_single_record <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.unique.point.in.ecoregion,], nchunks=100)%>%
+    ecoreg_from_single_record <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.unique.point.in.ecoregion,], nchunks=100)%>%
                                                     lengths() %>% `>`(.,0L) %>%
-                                                    RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                                    RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                     dplyr::select(ECO_NAME) %>%
                                                     dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -763,9 +763,9 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
                                             lengths() %>% `>`(.,0L))
 
     # retrieve ecoregions of records flagged as outside of the alpha hull
-    ecoreg_from_alpha_hull_exclusion <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.outside.alpha.hull,], nchunks=100)%>%
+    ecoreg_from_alpha_hull_exclusion <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.outside.alpha.hull,], nchunks=100)%>%
                                                            lengths() %>% `>`(.,0L) %>%
-                                                           RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                                           RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                            dplyr::select(ECO_NAME) %>%
                                                            dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -822,7 +822,7 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
   # identify geographic outliers
   is.geographic.outlier = sf::st_coordinates(working_loc_data) %>%
     data.frame(row.names=NULL) %>%
-    dplyr::mutate(kdist = tryCatch(spatialrisk::haversine(Y, X, mean(Y), mean(X)),
+    dplyr::mutate(kdist = tryCatch(haversine(Y, X, mean(Y), mean(X)),
                                    error=function(err) geosphere::distGeo(p1=cbind(X,Y), p2=cbind(mean(X),mean(Y)))) ) %>%
     dplyr::mutate_at(.vars= dplyr::vars(kdist), .funs= list(is.outlier = ~ . > stats::quantile(., probs=.75) + 1.5 * stats::IQR(.))) %$% is.outlier
 
@@ -834,13 +834,13 @@ make_ecoregion_domain <- function(loc_dat, coordHeaders=NULL, output_dir=NULL, o
       sf::st_as_sfc()
 
     # identify best ecoregions polygons candidates (intersects)
-    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split, bounding_box, nchunks=100) %>%
+    best_ecoreg_guess <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split, bounding_box, nchunks=100) %>%
                                             lengths() %>% `>`(.,0L))
 
     # retrieve ecoregions of records flagged as geographic outliers
-    ecoreg_from_outliers <- suppressMessages(st_par_intersects(RGeodata::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.geographic.outlier,], nchunks=100)%>%
+    ecoreg_from_outliers <- suppressMessages(st_par_intersects(RGeodata:::ecoregions_split[best_ecoreg_guess, ], working_loc_data[is.geographic.outlier,], nchunks=100)%>%
                                                lengths() %>% `>`(.,0L) %>%
-                                               RGeodata::ecoregions_split[best_ecoreg_guess, ][.,] %>%
+                                               RGeodata:::ecoregions_split[best_ecoreg_guess, ][.,] %>%
                                                dplyr::select(ECO_NAME) %>%
                                                dplyr::rename(REGION_NAME=ECO_NAME))
 
@@ -918,7 +918,7 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
     stop("Please provide a csv file or a data.frame or a matrix with longitude and latitude coordinates of species occurrence records.")
 
   file_flag = tryCatch(file.exists(bg_dat), error=function(err) FALSE) && !tryCatch(dir.exists(loc_dat), error=function(err) FALSE)
-  data_flag = !file_flag & any(inherits(bg_dat, c("RasterLayer","stars", "sf")))
+  data_flag = !file_flag & inherits(bg_dat, c("RasterLayer","sf"))
 
   if(!file_flag & !data_flag)
     stop('Unable to read input data. Please provide valid input data')
@@ -959,11 +959,11 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
     cat('#= 2.a Extract polygons falling within the given bounding box\n')
     cat('#--------------------------------------------------------------\n')
   }
-  bbx <- suppressWarnings(suppressMessages(if(inherits(bg_dat,"RasterLayer")) st_rectangle(sf::st_bbox(sf::st_as_sf(bg_dat))) else st_rectangle(sf::st_bbox(bg_dat))))
+  bbx <- suppressWarnings(suppressMessages(if(inherits(bg_dat,c("RasterLayer","SpatRaster"))) st_rectangle(sf::st_bbox(sf::st_as_sf(bg_dat))) else st_rectangle(sf::st_bbox(bg_dat))))
   if(!extent_only){
-    if(inherits(bg_dat,"RasterLayer")){
+    if(inherits(bg_dat,c("RasterLayer","SpatRaster"))){
       bg_dat <- bg_dat %>%
-      sf::st_as_stars() %>%
+      terra::rast() %>%
       sf::st_as_sf(as_points=FALSE, merge=TRUE)
     }
   }
@@ -972,8 +972,7 @@ make_projection_domain <- function(bg_dat, output_name=NULL, output_dir=NULL, di
       polygons_ <- RGeodata:::biomes %>%
         sf::st_cast(., "POLYGON", warn=FALSE)
     }else{
-      polygons_ <- RGeodata:::ecoregions_split#RGeodata::ecoregions %>%
-        #sf::st_cast(., "POLYGON", warn=FALSE)
+      polygons_ <- RGeodata:::ecoregions_split
     }
   )
   # condition 1: polygons must be inside the bounding box of the input spatial object

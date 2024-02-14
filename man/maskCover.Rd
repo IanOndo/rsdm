@@ -7,9 +7,9 @@
 maskCover(x, y, do.crop = TRUE, ...)
 }
 \arguments{
-\item{x, }{A `Raster*` object}
+\item{x, }{A `SpatRaster*` or `Raster*` object}
 
-\item{y, }{A `Spatial*` object}
+\item{y, }{A `sf` or `SpatVector*` object}
 }
 \value{
 A `Raster*` object

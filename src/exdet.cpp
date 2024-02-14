@@ -67,6 +67,7 @@ using std::log;
  //' @param ref A N'x M numeric matrix of N' observations from the same M variables as `trg` taken as a reference dataset.
  //' @return A numeric vector of (negative) novelty values of the same length as the number of rows
  //' of the target data matrix.
+ //' @name nt1
  // [[Rcpp::export]]
  arma::vec arma_calc_nt1(arma::mat &trg, arma::mat &ref){
 
@@ -107,6 +108,7 @@ using std::log;
  //' @param ref A N'x M numeric matrix of N' observations from the same M variables as `trg` taken as a reference dataset.
  //' @return A numeric vector of integer values denoting which variable (i.e. which column) has the highest degree of extrapolation
  //'  beyond the reference conditions
+ //'  @name mic1
  // [[Rcpp::export]]
  Rcpp::IntegerVector arma_calc_mic_nt1(arma::mat &trg, arma::mat &ref){
 
@@ -165,6 +167,7 @@ using std::log;
  //' @param ref A N'x M numeric matrix of N' observations from the same M variables as `trg` taken as a reference dataset.
  //' @return A numeric vector of the type 2 novelty index of the same length as the number of rows
  //' of the target data matrix.
+ //' @name nt2
  // [[Rcpp::export]]
  arma::vec arma_calc_nt2(arma::mat &trg, arma::mat &ref){
 
@@ -195,6 +198,7 @@ using std::log;
  //' @param ref A N'x M numeric matrix of N' observations from the same M variables as `trg` taken as a reference dataset.
  //' @return A numeric vector of integer values denoting which variable (i.e. which column) has the highest degree of extrapolation
  //' beyond the correlation structure found in the reference dataset
+ //' @name mic2
  // [[Rcpp::export]]
  arma::uvec arma_calc_mic_nt2(arma::mat &trg, arma::mat &ref){
 
@@ -252,9 +256,9 @@ using std::log;
  //'
  //' @description Given a target raster, identifies the most influential variable
  //' i.e. the variable with the most dissimilar values compared to a reference raster.
- //' @param trg A N x M numerix matrix of N observations from M variables.
- //' @param ref A N'x M numeric matrix of N' observations from the same M variables as `trg` taken as a reference dataset.
- //' @return A numeric vector of integer values denoting which variable (i.e. which column) has the highest novelty value
+ //' @param trg A RasterBrick object with M variables.
+ //' @param ref A RasterBrick object with the same M variables as `trg` taken as a reference.
+ //' @return A RasterLayer object with values denoting which variable (i.e. layer index) has the highest novelty value
  //' @export
  // [[Rcpp::export]]
  Rcpp::S4 arma_micdet_raster(Rcpp::S4 &trg, Rcpp::S4 &ref){
@@ -333,6 +337,7 @@ using std::log;
  //' @details Negative values denote novelty conditions of type 1, values between 0 and 1
  //' denote no novelty, i.e. conditions in the target dataset similar to the reference dataset,
  //' and values > 1 denote novelty conditions of type 2.
+ //' @name exdet
  //' @references Mesgaran, M.B., Cousens, R.D. & Webber, B.L. (2014)
  //'  \href{https://onlinelibrary.wiley.com/doi/full/10.1111/ddi.12209}{Here be dragons: a tool for quantifying novelty due to covariate range and correlation change when projecting species distribution models}. Diversity & Distributions, 20: 1147-1159, DOI: 10.1111/ddi.12209
  //' @export
@@ -340,7 +345,7 @@ using std::log;
  arma::vec arma_exdet(arma::mat &trg, arma::mat &ref){
 
    // test for novelty of type 1
-   arma::vec NT1 = arma_calc_nt1(ref, trg);
+   arma::vec NT1 = arma_calc_nt1(trg, ref);
 
    // test for novelty of type 2 on remaining points (i.e. inside the range where NT1=0)
    arma::uvec is_in_range = arma::find(NT1==0);
@@ -350,7 +355,7 @@ using std::log;
      return NT1;
    }
    arma::mat trg_in_range = trg.rows(is_in_range);
-   arma::vec NT2 = arma_calc_nt2(ref, trg_in_range);
+   arma::vec NT2 = arma_calc_nt2(trg_in_range,ref);
    NT1.elem(is_in_range) = NT2;
 
    return NT1;
@@ -358,12 +363,12 @@ using std::log;
 
  //' @title ExDet - Extrapolation Detection function for rasters
  //'
- //' @description Given a target and reference raster, computes the extrapolation index
+ //' @description Given a projection and reference raster, computes the extrapolation index
  //' as defined in Mesgaran, M. B., R. D. Cousens, B. L. Webber, and J. Franklin. 2014.
  //' @param trg A RasterBrick object of M layers of environmental conditions.
- //' @param ref A RasterBrick object of the same M layers as `trg` but representing environmental conditions of reference.
+ //' @param ref A RasterBrick object with the same layers as `trg` but representing environmental conditions of reference.
  //' @param compute_mic. A logical. Should the most influential covariate be also calculated ? Default is `FALSE`.
- //' @return A RasterBrick of novelty values of the same dimensions as the target raster.
+ //' @return A RasterLayer of novelty values of the same dimensions as the `trg`.
  //' @details Negative values denote novelty conditions of type 1, values between 0 and 1
  //' denote no novelty, i.e. conditions in the target raster similar to conditions in the reference raster,
  //' and values > 1 denote novelty conditions of type 2.
@@ -400,22 +405,25 @@ using std::log;
    // compute extrapolation
    int n_layers = 1;
    Rcout << "Computing uni/multivariate extrapolation...\n";  R_FlushConsole();
+   arma::vec micdet, exdet = arma_exdet(trg_array_valid, ref_array_valid);
 
-   arma::vec micdet, exdet = arma_exdet(ref_array_valid, trg_array_valid);
+   // compute mic
    if(compute_mic){
      Rprintf("Computing most influential covariate...\n");  R_FlushConsole();
      n_layers+=1;
-     micdet = Rcpp::as<arma::vec>(arma_micdet(ref_array_valid, trg_array_valid));
+     micdet = Rcpp::as<arma::vec>(arma_micdet(trg_array_valid, ref_array_valid));
    }
 
    Rcpp::StringVector layernames(n_layers);
    Rcpp::NumericVector extent_min(n_layers), extent_max(n_layers);
+   Rcpp::LogicalVector is_factor(n_layers);
    arma::mat vals = arma::mat(trg_nrows*trg_ncols, n_layers, arma::fill::value(NA_REAL));
 
    vals.elem(trg_valid) = exdet;
    layernames(0)="exdet";
    extent_min(0)=exdet.min();
    extent_max(0)=exdet.max();
+   is_factor(0)=false;
 
    if(n_layers>1){
      trg_valid+=trg_nrows*trg_ncols;
@@ -423,6 +431,7 @@ using std::log;
      layernames(1)="mic";
      extent_min(1)=micdet.min();
      extent_max(1)=micdet.max();
+     is_factor(1)=true;
    }
 
    Rcout << "Updating raster values...\n";
@@ -442,7 +451,7 @@ using std::log;
    trgdata.slot("nlayers") = n_layers;
 
    if(compute_mic){
-     trgdata.slot("isfactor") = true;
+     trgdata.slot("isfactor") = is_factor;
      Rcpp::List L(n_layers);
      L[0] = Rcpp::DataFrame::create(Named("ID") = 1, Named("Covariate") = NA_INTEGER);
      L[1] = Rcpp::DataFrame::create(Named("ID") = Rcpp::Range(1,trg_nlayers), Named("Covariate") = trg_names);

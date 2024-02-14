@@ -25,7 +25,7 @@ train_Maxent <- function(loc_dat,
     stop("Output directory is missing. Please select a directory for maxent model output.")
 
   loc_file_flag = tryCatch(file.exists(loc_dat), error=function(err) FALSE) && !tryCatch(dir.exists(loc_dat), error=function(err) FALSE)
-  loc_data_flag = !loc_file_flag & any(inherits(loc_dat, c("data.frame","matrix")))
+  loc_data_flag = !loc_file_flag & inherits(loc_dat, c("data.frame","matrix"))
 
   if(!loc_file_flag & !loc_data_flag)
     stop('Unable to read location data. Please provide valid location data')
@@ -50,19 +50,19 @@ train_Maxent <- function(loc_dat,
     stop("The directory ",outputdir," does not exist or is not accessible.")
 
   if(is.null(coordHeaders)){
-    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|[Xx]",x = names(loc_dat), value=TRUE)[1]
-    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|[Yy]",x = names(loc_dat), value=TRUE)[1]
+    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|^[Xx]$",x = names(loc_dat), value=TRUE)[1]
+    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|^[Yy]$",x = names(loc_dat), value=TRUE)[1]
     coordHeaders <- c(id_x_lon, id_y_lat)
   }else if(length(coordHeaders)!=2){
     stop("Argument 'coordHeaders' must be of length 2.")
   }
 
   env_dir_flag = tryCatch(dir.exists(env_dat), error=function(err) FALSE)
-  env_data_flag = !env_dir_flag & any(inherits(loc_dat, c("RasterStack","RasterLayer")))
+  env_data_flag = !env_dir_flag & inherits(env_dat, c("RasterStack","SpatRasterDataset"))
 
   sf_loc_data <- loc_dat %>%
     dplyr::rename(X=coordHeaders[1], Y=coordHeaders[2]) %>%
-    sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs('+proj=longlat +datum=WGS84')) %>%
+    sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs(4326)) %>%
     sf::st_coordinates() %>%
     as.data.frame(row.names=NULL)
 
@@ -82,18 +82,28 @@ train_Maxent <- function(loc_dat,
 
     arg.names=names(dot.args)
 
-    bg_args <- dot.args[arg.names %in% c("k", "do.parallel", "land_file", "output_dir", "do.alpha_hull", "dissolve", "min_area_cover", "grid_res", "coastline", "method")]
+    bg_args <- dot.args[arg.names %in% c("k",
+                                         "do.parallel",
+                                         "land_file",
+                                         "output_dir",
+                                         "do.alpha_hull",
+                                         "dissolve",
+                                         "min_area_cover",
+                                         "grid_res",
+                                         "coastline",
+                                         "method",
+                                         "verbose")]
     if(length(bg_args)>0L){
-      bg_masks <- try(do.call(make_geographic_block, append(list(kdat=sf_loc_data, output_name=species_name, verbose=FALSE), bg_args)), silent=TRUE)
+      bg_masks <- try(do.call(make_geographic_block, append(list(kdat=sf_loc_data, output_name=species_name), bg_args)), silent=TRUE)
       if(inherits(bg_masks,"try-error")){
-        cat(bg_masks)
+        message(bg_masks)
         stop("Unable to create a geographically masked background dataset.")
       }
       list_cv_args <- append(list_cv_args, list(bg_masks=bg_masks,k=dplyr::n_distinct(bg_masks$layer)))
     }else{
       bg_masks <- try(do.call(make_geographic_block, list(kdat=sf_loc_data, output_name=species_name, verbose=FALSE)), silent=TRUE)
       if(inherits(bg_masks,"try-error")){
-        cat(bg_masks)
+        message(bg_masks)
         stop("Unable to create a geographically masked background dataset.")
       }
       list_cv_args <- append(list_cv_args, list(bg_masks=bg_masks,k=dplyr::n_distinct(bg_masks$layer)))
@@ -104,8 +114,10 @@ train_Maxent <- function(loc_dat,
 
   }else{
     bg_masks <- try(do.call(make_geographic_block, list(kdat=sf_loc_data, output_name=species_name, verbose=FALSE)), silent=TRUE)
-    if(inherits(bg_masks,"try-error"))
+    if(inherits(bg_masks,"try-error")){
+      message(bg_masks)
       stop("Unable to create a geographically masked background dataset.")
+    }
     list_cv_args <- append(list_cv_args, list(bg_masks=bg_masks,k=dplyr::n_distinct(bg_masks$layer)))
   }
 
@@ -120,7 +132,7 @@ train_Maxent <- function(loc_dat,
   model.output <- try(do.call(block_cv_maxent, list_cv_args),silent=TRUE)
 
   if(inherits(model.output,"try-error")){
-    cat(model.output)
+    message(model.output)
     stop("Model training produced an error.")
   }
   #============================
@@ -130,7 +142,7 @@ train_Maxent <- function(loc_dat,
   model.performance <- try(get_best_maxent_model(model_output = model.output, eval_metrics = metrics),silent=TRUE)
 
   if(inherits(model.performance,"try-error")){
-    cat(model.performance)
+    message(model.performance)
     stop("An error occurred when selecting the best model.")
   }
   # save outputs
@@ -144,6 +156,7 @@ train_Maxent <- function(loc_dat,
   #===========================
   #= 4. train the best model #
   #===========================
+
   # training occurrence records
   K <- if("k" %in% names(dot.args)) dot.args[["k"]] else 3
   out_model_dn<- file.path(outputsubdir, paste(letters[1:K],collapse=""))
@@ -155,170 +168,142 @@ train_Maxent <- function(loc_dat,
   trainingsampfile = file.path(out_model_dn,'sptrain.csv')
   write.csv(training_loc, trainingsampfile, row.names=FALSE)
 
+  bg_masks <- terra::vect(bg_masks)
   # environmental layers
   if(env_data_flag){
-    env_bg0 <- stars::st_as_stars(env_dat)
-
+    env_bg0 <- terra::rast(env_dat)
     # collapse attributes
-    if(length(stars::st_dimensions(env_bg0))<3)
-      env_bg0 %<>%
-      merge() %>%
-      stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-      stars::st_set_dimensions(names = c("x", "y", "band"))
+    # if(length(stars::st_dimensions(env_bg0))<3)
+    #   env_bg0 %<>%
+    #   merge() %>%
+    #   stars::st_set_dimensions(3, values = names(env_bg0)) %>%
+    #   stars::st_set_dimensions(names = c("x", "y", "band"))
+    #
+    # env_bg <- env_bg0 %>%
+    #   as("Raster") %>%
+    #   setNames(stars::st_dimensions(env_bg0)$band$values) %>%
+    #   raster::crop(y=as(bg_masks,"Spatial")) %>%
+    #   stars::st_as_stars()
+    #
+    # bg_masks0 <- bg_masks %>%
+    #   as("Spatial") %>%
+    #   raster::rasterize(as(env_bg,"Raster"), getCover=TRUE)
+    # bg_masks0[bg_masks0==0] <- NA
 
-    env_bg <- env_bg0 %>%
-      as("Raster") %>%
-      setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-      raster::crop(y=as(bg_masks,"Spatial")) %>%
-      stars::st_as_stars()
+    # set environmental layers extent to training block extent
+    env_bg <- terra::crop(env_bg0, bg_masks)
 
-    bg_masks0 <- bg_masks %>%
-      as("Spatial") %>%
-      raster::rasterize(as(env_bg,"Raster"), getCover=TRUE)
+    # create a mask with cells that covers the training block
+    bg_masks0 <- terra::rasterize(bg_masks, env_bg, cover=TRUE)
     bg_masks0[bg_masks0==0] <- NA
 
     training_bg <-try({
       names(env_bg) <- strip_extension(names(env_bg))
-      env_bg %>%
-        as("Raster") %>%
-        setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-        raster::mask(mask=bg_masks0) %>%
-        stars::st_as_stars()
+      terra::mask(env_bg, mask=bg_masks0)
+      # env_bg %>%
+      #   as("Raster") %>%
+      #   setNames(stars::st_dimensions(env_bg0)$band$values) %>%
+      #   raster::mask(mask=bg_masks0) %>%
+      #   stars::st_as_stars()
     },silent=TRUE)
 
-    if(inherits(training_bg,"try-error"))
+    if(inherits(training_bg,"try-error")){
+      message(training_bg)
       stop("Unable to read environmental layers from data env_dat. Please make sure all the layers have the same dimensions.")
+    }
 
   }
   else if(env_dir_flag){
-    env_bg0 <- try(env_dat %>%
-                    read_layers(),silent=TRUE)
-
-    if(inherits(env_bg0,"try-error")){
-      cat(env_bg)
-      stop("Unable to read environmental raster layers.")
-    }
-
+    env_bg0 <- read_layers(env_dat)
     training_bg <-try({
-      names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
+      names(env_bg0) <- if(anyNA(strip_extension(names(env_bg0))))  names(env_bg0) else strip_extension(names(env_bg0))
 
-      # if(inherits(env_bg,"stars")){
-      #   tmp <- env_bg %>%
-      #     `[`(bg_masks)
+      # if(inherits(env_bg0,"stars")){
+      #
+      #   # collapse attributes
+      #   if(length(stars::st_dimensions(env_bg0))<3)
+      #     env_bg0 %<>%
+      #     merge() %>%
+      #     stars::st_set_dimensions(3, values = names(env_bg0)) %>%
+      #     stars::st_set_dimensions(names = c("x", "y", "band"))
+      #
+      #   # set environmental layers extent to training block extent
+      #   tmp <- suppressMessages(env_bg0 %>%
+      #                             as("Raster") %>%
+      #                             raster::crop(y=as(bg_masks,"Spatial")) %>%
+      #                             stars::st_as_stars())
       #
       #   st_dim <- attr(tmp,"dimension")
       #   # ugly work-around when crop returns crap
       #   if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
-      #     1:length(tmp) %>%
-      #       lapply(function(l) as(env_bg[l],"Raster") %>%
-      #                raster::crop(y=as(bg_masks,"Spatial")) %>%
-      #                raster::mask(mask=as(bg_masks,"Spatial")) %>%
-      #                stars::st_as_stars()) %>%
-      #       do.call(c,.) %>%
-      #       setNames(names(env_bg))
+      #
+      #     # 1:length(tmp) %>%
+      #     #   lapply(function(l){
+      #     env_bg <- as(env_bg0,"Raster") %>%
+      #       raster::crop(y=as(bg_masks,"Spatial")) %>%
+      #       setNames(stars::st_dimensions(env_bg0)$band$values)
+      #
+      #     bg_masks0 <- bg_masks %>%
+      #       as("Spatial") %>%
+      #       raster::rasterize(env_bg, getCover=TRUE)
+      #     bg_masks0[bg_masks0==0] <- NA
+      #
+      #     env_bg %>%
+      #       raster::mask(mask=bg_masks0) %>%
+      #       stars::st_as_stars()
+      #
       #   }else{
-      #     tmp
+      #     # create a mask with cells that covers the training block
+      #     bg_masks0 <- bg_masks %>%
+      #       as("Spatial") %>%
+      #       raster::rasterize(as(tmp,"Raster"), getCover=TRUE)
+      #     bg_masks0[bg_masks0==0] <- NA
+      #
+      #     tmp %>%
+      #       as("Raster") %>%
+      #       setNames(stars::st_dimensions(env_bg0)$band$values) %>%
+      #       raster::mask(mask=bg_masks0) %>%
+      #       stars::st_as_stars()
       #   }
       #
       # }else{
-      #   env_bg %>%
-      #     raster::crop(y=as(bg_masks,"Spatial")) %>%
-      #     raster::mask(mask=as(bg_masks,"Spatial")) %>%
-      #     raster::stack()
-      # }
-      if(inherits(env_bg0,"stars")){
-
-        # collpase attributes
-        if(length(stars::st_dimensions(env_bg0))<3)
-          env_bg0 %<>%
-          merge() %>%
-          stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-          stars::st_set_dimensions(names = c("x", "y", "band"))
-
         # set environmental layers extent to training block extent
-        tmp <- suppressMessages(env_bg0 %>%
-                                  as("Raster") %>%
-                                  raster::crop(y=as(bg_masks,"Spatial")) %>%
-                                  stars::st_as_stars())
-
-        st_dim <- attr(tmp,"dimension")
-        # ugly work-around when crop returns crap
-        if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
-
-          # 1:length(tmp) %>%
-          #   lapply(function(l){
-          env_bg <- as(env_bg0,"Raster") %>%
-            raster::crop(y=as(bg_masks,"Spatial")) %>%
-            setNames(stars::st_dimensions(env_bg0)$band$values)
-
-          bg_masks0 <- bg_masks %>%
-            as("Spatial") %>%
-            raster::rasterize(env_bg, getCover=TRUE)
-          bg_masks0[bg_masks0==0] <- NA
-
-          env_bg %>%
-            raster::mask(mask=bg_masks0) %>%
-            stars::st_as_stars()
-          #   }) %>%
-          # do.call(c,.) %>%
-          # setNames(names(env_bg))
-        }else{
-          # create a mask with cells that covers the training block
-          bg_masks0 <- bg_masks %>%
-            as("Spatial") %>%
-            raster::rasterize(as(tmp,"Raster"), getCover=TRUE)
-          bg_masks0[bg_masks0==0] <- NA
-
-          tmp %>%
-            as("Raster") %>%
-            setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-            raster::mask(mask=bg_masks0) %>%
-            stars::st_as_stars()
-
-          # `[`(training_block0 %>%
-          #       stars::st_as_stars() %>%
-          #       sf::st_as_sf(as_points=FALSE))
-
-        }
-
-      }else{
-        # set environmental layers extent to training block extent
-        env_bg <- env_bg0 %>%
-          raster::crop(y=as(bg_masks,"Spatial"))
+        env_bg <- terra::crop(env_bg0, bg_masks)
 
         # create a mask with cells that covers the training block
-        bg_masks0 <- bg_masks %>%
-          as("Spatial") %>%
-          raster::rasterize(env_bg, getCover=TRUE)
+        bg_masks0 <- terra::rasterize(bg_masks, env_bg, cover=TRUE)
         bg_masks0[bg_masks0==0] <- NA
-
-        env_bg %>%
-          raster::mask(mask=bg_masks0) %>%
-          raster::stack()
-      }
+        terra::mask(env_bg, mask=bg_masks0)
+      #}
     })
   }
-  if(inherits(training_bg,"try-error"))
+  if(inherits(training_bg,"try-error")){
+    message(training_bg)
     stop("Unable to read environmental layers from ",env_dat,". Please make sure all the layers have the same dimensions.")
+  }
 
   dn <- file.path(out_model_dn,'env')
   if(!dir.exists(dn)) dir.create(dn)
 
-  if(inherits(training_bg,"stars"))
-    training_bg %<>%
-    split("band") %>%
-    setNames(stars::st_dimensions(env_bg0)$band$values)
+  # if(inherits(training_bg,"stars"))
+  #   training_bg %<>%
+  #   split("band") %>%
+  #   setNames(stars::st_dimensions(env_bg0)$band$values)
 
   # save layers
-  n_layers <- if(inherits(training_bg,"RasterStack")) raster::nlayers(training_bg) else length(training_bg)
+  if(!inherits(training_bg, c("SpatRaster", "SpatRasterDataset"))) training_bg <- terra::rast(training_bg)
+  n_layers <- terra::nlyr(training_bg)
   for(l in 1:n_layers){
-    training_bg_cvrt <- if(inherits(training_bg,"RasterStack"))  training_bg[[l]] else as(training_bg[l],"Raster")
-    raster::writeRaster(training_bg_cvrt, file.path(dn, paste0(names(training_bg)[l],'.asc')), format='ascii', overwrite=TRUE)
+    terra::writeRaster(training_bg[[l]],
+                        file.path(dn, paste0(names(training_bg)[l],'.asc')),
+                        NAflag = -9999,
+                        overwrite=TRUE)
   }
 
   # get maximum number of background samples
-  maxbackground <- min(sapply(training_bg, function(x) sum(!is.na(x))))
+  maxbackground <- min(unlist(terra::global(training_bg, fun="notNA")))#min(sapply(training_bg, function(x) sum(!is.na(x))))
 
+  # set Maxent paramaters
   if(length(dot.args)>0L && "maxent_settings" %in% names(dot.args)){
 
     maxent_settings<- dot.args[["maxent_settings"]]
@@ -353,42 +338,43 @@ train_Maxent <- function(loc_dat,
   if(!is.null(maxent_settings[["biasfile"]])){
 
     biasfile <- maxent_settings[["biasfile"]]
+
     if(file.exists(biasfile) && !dir.exists(biasfile)){
-      bias_file <- try(biasfile %>%
-                         raster::raster() %>%
-                         raster::crop(y=as(bg_masks,"Spatial")) %>%
-                         stars::st_as_stars(),silent=TRUE)
 
-      if(!inherits(bias_file,"try-error")){
-        st_dim <- attr(bias_file,"dimension")
-        if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
+      bias_file <- try(terra::rast(biasfile) %>% terra::crop(bg_masks),silent=TRUE)
 
-          biasfile0 <- biasfile %>%
-            raster::raster() %>%
-            raster::crop(y=as(bg_masks,"Spatial"))
+      if(inherits(bias_file,"try-error")) stop(bias_file)
 
-          # create a mask with cells that covers the training block
-          bg_masks0 <- bg_masks %>%
-            as("Spatial") %>%
-            raster::rasterize(biasfile0, getCover=TRUE)
-          bg_masks0[bg_masks0==0] <- NA
+      # create a mask with cells that covers the training block
+      bg_masks0 <- terra::rasterize(bg_masks, bias_file, cover=TRUE)
+      bg_masks0[bg_masks0==0] <- NA
 
-          bias_file <- biasfile0 %>%
-            raster::mask(mask=bg_masks0)
-        }else{
-          # create a mask with cells that covers the training block
-          bg_masks0 <- bg_masks %>%
-            as("Spatial") %>%
-            raster::rasterize(as(bias_file,"Raster"), getCover=TRUE)
-          bg_masks0[bg_masks0==0] <- NA
+      # if(!inherits(bias_file,"try-error")){
+      #   st_dim <- attr(bias_file,"dimension")
+      #   if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
+      #
+      #     biasfile0 <- biasfile %>%
+      #       raster::raster() %>%
+      #       raster::crop(y=as(bg_masks,"Spatial"))
+      #
+      #     # create a mask with cells that covers the training block
+      #     bg_masks0 <- bg_masks %>%
+      #       as("Spatial") %>%
+      #       raster::rasterize(biasfile0, getCover=TRUE)
+      #     bg_masks0[bg_masks0==0] <- NA
+      #
+      #     bias_file <- biasfile0 %>%
+      #       raster::mask(mask=bg_masks0)
+        #}else{
+      # save bias file raster in temporary folder
+      outfile <-file.path(tempdir(),paste0(species_name,"_biasfile",".asc"))
 
-          bias_file %<>%
-            as("Raster") %>%
-            raster::mask(mask=bg_masks0)
-        }
-        # save bias file raster in temporary folder
-        outfile <-file.path(raster::tmpDir(),paste0(species_name,"_biasfile",".asc"))
-        raster::writeRaster(bias_file, outfile, format="ascii", overwrite=TRUE)
+      bias_file = terra::mask(bias_file,
+                              mask=bg_masks0,
+                              filename=outfile,
+                              NAflag = -9999,
+                              overwrite=TRUE)
+       # }
         # set the new biasfile file path
         maxent_settings[["biasfile"]] <- outfile
         maxent_settings[["biastype"]] <- 3
@@ -396,10 +382,10 @@ train_Maxent <- function(loc_dat,
         # remove biasfile option(s)
         maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
       }
-    }else{
+
+  }else{
       # remove biasfile option(s)
       maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
-    }
   }
 
   model.args <-Reduce(append,list(
@@ -418,13 +404,13 @@ train_Maxent <- function(loc_dat,
   model_trained <- suppressWarnings(do.call(maxent, model.args))
 
   if(inherits(model_trained,"try-error")){
-    cat(model_trained)
+    message(model_trained)
     stop("Maxent model failed. See error.")
   }
 
   # remove temporary file if needed
   on.exit({
-    tmp <- file.path(raster::tmpDir(),paste0(species_name,"_biasfile",".asc"))
+    tmp <- file.path(tempdir(),paste0(species_name,"_biasfile",".asc"))
     if(file.exists(tmp))
       file.remove(tmp)
   })
@@ -463,7 +449,7 @@ train_geoModel <- function(loc_dat,
     stop("Output directory is missing. Please select a directory for inverse-distance weighted model output.")
 
   loc_file_flag = tryCatch(file.exists(loc_dat), error=function(err) FALSE) && !tryCatch(dir.exists(loc_dat), error=function(err) FALSE)
-  loc_data_flag = !loc_file_flag & any(inherits(loc_dat, c("data.frame","matrix")))
+  loc_data_flag = !loc_file_flag & inherits(loc_dat, c("data.frame","matrix"))
 
   if(!loc_file_flag & !loc_data_flag)
     stop('Unable to read location data. Please provide valid location data')
@@ -488,8 +474,8 @@ train_geoModel <- function(loc_dat,
     stop("The directory ",outputdir," does not exist or is not accessible.")
 
   if(is.null(coordHeaders)){
-    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|[Xx]",x = names(loc_dat), value=TRUE)[1]
-    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|[Yy]",x = names(loc_dat), value=TRUE)[1]
+    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|^[Xx]$",x = names(loc_dat), value=TRUE)[1]
+    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|^[Yy]$",x = names(loc_dat), value=TRUE)[1]
     coordHeaders <- c(id_x_lon, id_y_lat)
   }else if(length(coordHeaders)!=2){
     stop("Argument 'coordHeaders' must be of length 2.")
@@ -497,7 +483,8 @@ train_geoModel <- function(loc_dat,
 
   sf_loc_data <- loc_dat %>%
     dplyr::rename(X=coordHeaders[1], Y=coordHeaders[2]) %>%
-    sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs('+proj=longlat +datum=WGS84')) %>%
+    sf::st_as_sf(., coords=c("X","Y"),
+                 crs=sf::st_crs(4326)) %>%
     sf::st_coordinates()
 
   #==========================
@@ -505,7 +492,11 @@ train_geoModel <- function(loc_dat,
   #==========================
   if(is.null(bg_dat)){
 
-    bg_args <- list(loc_dat=sf_loc_data, do.alpha_hull=TRUE, dissolve=FALSE, land_file=RGeodata::terrestrial_lands, save.outputs=FALSE, verbose=FALSE)
+    bg_args <- list(loc_dat=sf_loc_data,
+                    do.alpha_hull=TRUE,
+                    dissolve=FALSE,
+                    land_file=RGeodata::terrestrial_lands,
+                    save.outputs=FALSE, verbose=FALSE)
     dot.args <- list(...)
     if(length(dot.args)>0L){
       arg.names <- names(dot.args)
@@ -519,7 +510,7 @@ train_geoModel <- function(loc_dat,
     invisible(capture.output(domain <- try(do.call(make_ecoregion_domain, bg_args), silent=TRUE)))
 
     if(inherits(domain,'try-error')){
-      cat(domain)
+      message(domain)
       stop("Unable to build a background from the set of points")
     }
 
@@ -530,11 +521,13 @@ train_geoModel <- function(loc_dat,
     }
 
     # get background coordinates
-    raster_template  <- tryCatch(raster::raster(domain, res = grid_res), error=function(err) raster::raster(as(domain,"Spatial"), res = grid_res))
+    raster_template  <- try(terra::rast(terra::vect(domain), res = grid_res),silent=TRUE)
+    if(inherits(raster_template,"try-error")){ message(raster_template);stop("Cannot convert background to raster layer")}
     raster_template[] <- 1
     # get presence cells
-    pres_cells <- raster::cellFromXY(raster_template, xy=sf_loc_data)
-    all_cells <- raster::extract(x=raster_template, y=as(domain,"Spatial"),cellnumber=TRUE,df=TRUE)[['cell']]
+    pres_cells <- terra::cellFromXY(raster_template, xy=sf_loc_data)
+    all_cells <- terra::extract(x=raster_template,
+                                y=terra::vect(domain),cell=TRUE)[,'cell']
     # get background cells
     bg_cells <- base::setdiff(all_cells,pres_cells)
     # sample background cells to achieve at least 0.1 of prevalence
@@ -553,7 +546,7 @@ train_geoModel <- function(loc_dat,
   )
 
   if(inherits(geo_model,"try-error")){
-    cat(geo_model)
+    message(geo_model)
     stop("Unable to train the geographic model: ", algorithm)
   }
 
@@ -583,9 +576,8 @@ train_geoModel <- function(loc_dat,
 #'
 #' Partition both occurrence records and background into evaluation bins based on some spatial rules.
 #'
-#'
 #' @param loc_dat A two-column matrix,a data.frame, a data.table or a csv file with longitude and latitude coordinates of occurrence records.
-#' @param env_dat A RasterStack object or a character string specifying the path to a directory with environmental raster layers.
+#' @param env_dat A RasterStack or SpatRasterDataset object or a character string specifying the path to a directory with environmental raster layers.
 #' @param k A numeric integer specifying the number of bins required.
 #' @param coordHeaders A character string vector of length two giving the names of the coordinates in \code{loc_dat}
 #' @param bg_masks A RasterStack object of the background to be partitionned.
@@ -642,15 +634,16 @@ block_cv_maxent <- function(loc_dat, env_dat,
     stop("The directory ",outputdir," does not exist or is not accessible.")
 
   if(is.null(coordHeaders)){
-    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|[Xx]",x = names(loc_dat), value=TRUE)[1]
-    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|[Yy]",x = names(loc_dat), value=TRUE)[1]
+    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|^[Xx]$",x = names(loc_dat), value=TRUE)[1]
+    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|^[Yy]$",x = names(loc_dat), value=TRUE)[1]
     coordHeaders <- c(id_x_lon, id_y_lat)
   }else if(length(coordHeaders)!=2){
     stop("Argument 'coordHeaders' must be of length 2.")
   }
 
   env_dir_flag = tryCatch(dir.exists(env_dat), error=function(err) FALSE)
-  env_data_flag = !env_dir_flag & any(inherits(loc_dat, c("RasterStack","RasterLayer")))
+  env_data_flag = !env_dir_flag &
+    any(inherits(env_dat, c("RasterStack","SpatRasterDataset")))
 
   if(!env_dir_flag & !env_data_flag)
     stop('Unable to read environmental data. Please provide valid environmental data.')
@@ -661,7 +654,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
   sf_loc_data <- loc_dat %>%
     dplyr::rename(X=coordHeaders[1], Y=coordHeaders[2]) %>%
-    sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs('+proj=longlat +datum=WGS84'))
+    sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs(4326))
 
   maxent_args = bg_args = list()
   dot.args <- list(...)
@@ -692,16 +685,18 @@ block_cv_maxent <- function(loc_dat, env_dat,
   }
 
   if(!is.null(bg_masks)){
-    if(!inherits(bg_masks,c('RasterStack','sf')))
-      stop('Argument bg_masks must be a RasterStack or sf object.')
+    if(!inherits(bg_masks,c('RasterStack','SpatRasterDataset','sf')))
+      stop('Argument bg_masks must be a RasterStack, a SpatRasterDataset or a sf object.')
     if(inherits(bg_masks,'RasterStack')){
       if(raster::nlayers(bg_masks)!=k)
       stop('Number of layers in bg_masks must match the number of cluster k.')
+    }else if(inherits(bg_masks,'SpatRasterDataset')){
+      if(terra::nlyr(bg_masks)!=k)
+        stop('Number of layers in bg_masks must match the number of cluster k.')
     }else{
       if(length(unique(bg_masks %$% layer)) !=k)
         k <- length(unique(bg_masks %$% layer)) #stop('Number of cluster in bg_masks must match the number of cluster k.')
     }
-
   }
   else {
     #==================================
@@ -714,7 +709,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       bg_masks <- try(make_geographic_block(kdat=sf::st_coordinates(sf_loc_data), k=k), silent=TRUE)
 
     if(inherits(bg_masks,"try-error")){
-      cat(bg_masks)
+      message(bg_masks)
       stop("Unable to create a geographically masked background dataset.")
     }
 
@@ -775,133 +770,52 @@ block_cv_maxent <- function(loc_dat, env_dat,
     trainingsampfile = file.path(dirs_to_create[j],'sptrain.csv')
     write.csv(training_loc, trainingsampfile, row.names=FALSE)
 
+    training_block <- terra::vect(training_block)
+
     # environmental layers
     if(env_data_flag){
-      env_bg0 <- stars::st_as_stars(env_dat)
+      env_bg0 <- terra::rast(env_dat)
+      # set environmental layers extent to training block extent
+      env_bg <- terra::crop(env_bg0, training_block)
 
-      # collapse attributes
-      if(length(stars::st_dimensions(env_bg0))<3)
-        env_bg0 %<>%
-        merge() %>%
-        stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-        stars::st_set_dimensions(names = c("x", "y", "band"))
-
-      env_bg <- env_bg0 %>%
-        as("Raster") %>%
-        setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-        raster::crop(y=as(training_block,"Spatial")) %>%
-        stars::st_as_stars()
-
-      training_block0 <- training_block %>%
-        as("Spatial") %>%
-        raster::rasterize(as(env_bg,"Raster"), getCover=TRUE)
+      # create a mask with cells that covers the training block
+      training_block0 <- terra::rasterize(training_block, env_bg, cover=TRUE)
       training_block0[training_block0==0] <- NA
 
       training_bg <-try({
         names(env_bg) <- strip_extension(names(env_bg))
-        env_bg %>%
-          as("Raster") %>%
-          setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-          raster::mask(mask=training_block0) %>%
-          stars::st_as_stars()
+        terra::mask(env_bg, mask=training_block0)
       },silent=TRUE)
-      if(inherits(training_bg,"try-error"))
-        stop("Unable to read environmental layers from data env_dat. Please make sure all the layers have the same dimensions.")
-    }
-    else if(env_dir_flag){
 
-      env_bg0 <- try(env_dat %>%
-                      read_layers(),silent=TRUE)
-      if(inherits(env_bg0,"try-error")){
-        cat(env_bg0)
-        stop("Unable to read environmental raster layers.")
+      if(inherits(training_bg,"try-error")){
+        message(training_bg)
+        stop("Unable to read environmental layers from data env_dat. Please make sure all the layers have the same dimensions.")
       }
 
-      training_bg <-try({
-
-        names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
-
-        if(inherits(env_bg0,"stars")){
-
-          # collpase attributes
-          if(length(stars::st_dimensions(env_bg0))<3)
-            env_bg0 %<>%
-            merge() %>%
-            stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-            stars::st_set_dimensions(names = c("x", "y", "band"))
-
-          # set environmental layers extent to training block extent
-          tmp <- suppressMessages(env_bg0 %>%
-                                    as("Raster") %>%
-                                    raster::crop(y=as(training_block,"Spatial")) %>%
-                                    stars::st_as_stars())
-
-          st_dim <- attr(tmp,"dimension")
-          # ugly work-around when crop returns crap
-          if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
-
-            env_bg <- as(env_bg0,"Raster") %>%
-                        raster::crop(y=as(training_block,"Spatial")) %>%
-                        setNames(stars::st_dimensions(env_bg0)$band$values)
-
-                       training_block0 <- training_block %>%
-                         as("Spatial") %>%
-                         raster::rasterize(env_bg, getCover=TRUE)
-                       training_block0[training_block0==0] <- NA
-
-                       env_bg %>%
-                       raster::mask(mask=training_block0) %>%
-                       stars::st_as_stars()
-
-          }else{
-            # create a mask with cells that covers the training block
-            training_block0 <- training_block %>%
-              as("Spatial") %>%
-              raster::rasterize(as(tmp,"Raster"), getCover=TRUE)
-            training_block0[training_block0==0] <- NA
-
-            tmp %>%
-              as("Raster") %>%
-              setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-              raster::mask(mask=training_block0) %>%
-              stars::st_as_stars()
-
-          }
-
-        }else{
-          # set environmental layers extent to training block extent
-          env_bg <- env_bg0 %>%
-            raster::crop(y=as(training_block,"Spatial"))
-
-          # create a mask with cells that covers the training block
-          training_block0 <- training_block %>%
-            as("Spatial") %>%
-            raster::rasterize(env_bg, getCover=TRUE)
-          training_block0[training_block0==0] <- NA
-
-          env_bg %>%
-            raster::mask(mask=training_block0) %>%
-            raster::stack()
-        }
-
-      }, silent=TRUE)
-
-      if(inherits(training_bg,"try-error"))
-        stop("Unable to read environmental layers from ",env_dat,". Please make sure all the layers have the same dimensions.")
     }
+    else if(env_dir_flag){
+      env_bg0 <- read_layers(env_dat)
+      training_bg <-try({
+        names(env_bg0) <- if(anyNA(strip_extension(names(env_bg0))))  names(env_bg0) else strip_extension(names(env_bg0))
+        env_bg <- terra::crop(env_bg0, training_block)
+        # create a mask with cells that covers the training block
+        training_block0 <- terra::rasterize(training_block, env_bg, cover=TRUE)
+        training_block0[training_block0==0] <- NA
+        terra::mask(env_bg, mask=training_block0)
+      })
+    }
+
     dn <- file.path(dirs_to_create[j],'env')
     if(!dir.exists(dn)) dir.create(dn)
 
-    if(inherits(training_bg,"stars"))
-      training_bg %<>%
-      split("band") %>%
-      setNames(stars::st_dimensions(env_bg0)$band$values)
-
     # save layers
-    n_layers <- if(inherits(training_bg,"RasterStack")) raster::nlayers(training_bg) else length(training_bg)
+    if(!inherits(training_bg, c("SpatRaster", "SpatRasterDataset"))) training_bg <- terra::rast(training_bg)
+    n_layers <- terra::nlyr(training_bg)
     for(l in 1:n_layers){
-      training_bg_cvrt <- if(inherits(training_bg,"RasterStack"))  training_bg[[l]] else as(training_bg[l],"Raster")
-      raster::writeRaster(training_bg_cvrt, file.path(dn, paste0(names(training_bg)[l],'.asc')), format='ascii', overwrite=TRUE)
+      terra::writeRaster(training_bg[[l]],
+                         file.path(dn, paste0(names(training_bg)[l],'.asc')),
+                         NAflag = -9999,
+                         overwrite=TRUE)
     }
 
     #-------------------------
@@ -911,76 +825,53 @@ block_cv_maxent <- function(loc_dat, env_dat,
       dplyr::bind_cols(as.data.frame(sf::st_coordinates(sf_loc_data[!is_training_loc,])))
 
     # add environmental variables
-    if(inherits(env_bg0,"stars")){
-      env_bg0 %<>%
-        split("band") %>%
-        setNames(stars::st_dimensions(env_bg0)$band$values)
-      testing_loc <- testing_loc %>%
-        dplyr::bind_cols(map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
-        na.omit()
-    }else{
-      testing_loc <- testing_loc %>%
-        dplyr::bind_cols(raster::extract(env_bg0,.[,-1]) %>% as.data.frame(row.names = NULL)) %>%
-        na.omit()
-    }
+    testing_loc <- testing_loc %>%
+      dplyr::bind_cols(terra::extract(env_bg0,.[,-1], ID=FALSE) %>% as.data.frame(row.names = NULL)) %>%
+      na.omit()
 
     # check biasfile option
     if(!is.null(maxent_settings[["biasfile"]])){
+
       biasfile <- maxent_settings[["biasfile"]]
+
       if(file.exists(biasfile) && !dir.exists(biasfile)){
-        bias_file <- try(biasfile %>%
-                           raster::raster() %>%
-                           raster::crop(y=as(training_block,"Spatial")) %>%
-                           stars::st_as_stars(),silent=TRUE)
 
-        if(!inherits(bias_file,"try-error")){
-          st_dim <- attr(bias_file,"dimension")
-          if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
+        bias_file <- try(terra::rast(biasfile) %>% terra::crop(training_block),silent=TRUE)
 
-            biasfile0 <- biasfile %>%
-              raster::raster() %>%
-              raster::crop(y=as(training_block,"Spatial"))
+        if(inherits(bias_file,"try-error")) stop(bias_file)
 
-            # create a mask with cells that covers the training block
-            training_block0 <- training_block %>%
-              as("Spatial") %>%
-              raster::rasterize(biasfile0, getCover=TRUE)
-            training_block0[training_block0==0] <- NA
+        # create a mask with cells that covers the training block
+        training_block0 <- terra::rasterize(training_block, bias_file, cover=TRUE)
+        training_block0[training_block0==0] <- NA
 
-            bias_file <- biasfile0 %>%
-              raster::mask(mask=training_block0)
-          }else{
-            # create a mask with cells that covers the training block
-            training_block0 <- training_block %>%
-              as("Spatial") %>%
-              raster::rasterize(as(bias_file,"Raster"), getCover=TRUE)
-            training_block0[training_block0==0] <- NA
+        # save bias file raster in temporary folder
+        outfile <-file.path(tempdir(),paste0(species_name,"_biasfile_",j,".asc"))
 
-            bias_file %<>%
-              as("Raster") %>%
-              raster::mask(mask=training_block0)
-          }
-          # save bias file raster in temporary folder
-          outfile <-file.path(raster::tmpDir(),paste0(species_name,"_biasfile_",j,".asc"))
-          raster::writeRaster(bias_file, outfile, format="ascii", overwrite=TRUE)
-          # set the new biasfile file path
-          maxent_settings[["biasfile"]] <- outfile
-          maxent_settings[["biastype"]] <- 3
-          # add sampling probs to test data
-          extrct <- raster::extract(raster::raster(biasfile),testing_loc[,2:3],df=TRUE) %>%
-            subset(select=2) %>%
-            setNames(paste0(species_name,"_biasfile_",j))
-          testing_loc <- testing_loc %>%
-            dplyr::bind_cols(extrct)
-        }else{
-          #saveRDS(bias_file,paste0("E:/maxent_test/bias_file",j,".rds"))
+        bias_file = terra::mask(bias_file,
+                                mask=training_block0,
+                                filename=outfile,
+                                NAflag = -9999,
+                                overwrite=TRUE)
+
+        # set the new biasfile file path
+        maxent_settings[["biasfile"]] <- outfile
+        maxent_settings[["biastype"]] <- 3
+
+        # add sampling probs to test data
+        extrct <- terra::extract(terra::rast(biasfile),testing_loc[,2:3]) %>%
+          subset(select=2) %>%
+          setNames(paste0(species_name,"_biasfile_",j))
+
+        testing_loc <- testing_loc %>%
+          dplyr::bind_cols(extrct)
+
+      }else{
           # remove biasfile option(s)
           maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
-        }
-      }else{
+      }
+    }else{
         # remove biasfile option(s)
         maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
-      }
     }
 
     # save samples with data
@@ -999,10 +890,8 @@ block_cv_maxent <- function(loc_dat, env_dat,
       outdirs_created = unlist(sapply(outputdir_path, function(x) if(!dir.exists(x)) dir.create(x)))
       if(!all(outdirs_created)) stop("Unable to create directories", outputdir_path[!outdirs_created])
     }
-
     # set the maximum number of background samples
-    maxbackground <- min(sapply(training_bg, function(x) sum(!is.na(x))))
-
+    maxbackground <- min(unlist(terra::global(training_bg, fun="notNA"))) #min(sapply(training_bg, function(x) sum(!is.na(x))))
     if(length(maxent_settings)>0L){
       if("maximumbackground" %in% names(maxent_settings))
         maxent_settings[["maximumbackground"]] <- min(maxent_settings[["maximumbackground"]], maxbackground)
@@ -1030,7 +919,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
     model_trained <- try(do.call(maxent, cv.model.args),silent=TRUE)
 
    if(inherits(model_trained,"try-error")){
-     cat(model_trained)
+     message(model_trained)
      stop("Maxent model failed. Please check maxent.log file for more informations.")
    }
 
@@ -1038,21 +927,21 @@ block_cv_maxent <- function(loc_dat, env_dat,
     model_output <- get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
 
     if("ic" %in% eval_metrics){
-      if(inherits(training_bg,"stars")){
-        rst <- raster::stack(lapply(1:length(training_bg), function(l) as(training_bg[l], "Raster")))
-        names(rst) <- names(training_bg)
-      }else{
+      # if(inherits(training_bg,"stars")){
+      #   rst <- raster::stack(lapply(1:length(training_bg), function(l) as(training_bg[l], "Raster")))
+      #   names(rst) <- names(training_bg)
+      # }else{
         rst <- training_bg
-      }
+      #}
       occ <- training_loc[,-1]
       lbds <- list.files(outputdir_path[1], pattern="\\.lambdas",full.names=TRUE)
       if(length(lbds)==0L)
         warning("Unable to find lambdas file in directory ", outputdir_path[1])
 
-      pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=rst, quiet=TRUE)$prediction_raw, silent=TRUE)
+      pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=raster::stack(rst), quiet=TRUE)$prediction_raw, silent=TRUE)
 
       if(inherits(pred_raw,"try-error")){
-        print(geterrmessage())
+        message(pred_raw)
         warning("An error occurred when predicting maxent model located in ", outputdir_path[1])
       }
 
@@ -1091,7 +980,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
           if(length(lbds)==0L)
             stop("Unable to find lambdas file in directory ", new_output_directory)
 
-          pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=rst, quiet=TRUE)$prediction_raw, silent=TRUE)
+          pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=raster::stack(rst), quiet=TRUE)$prediction_raw, silent=TRUE)
 
           if(inherits(pred_raw,"try-error")){
             print(geterrmessage())
@@ -1125,7 +1014,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
     # remove temporary file if needed
     on.exit({
-      tmp <- file.path(raster::tmpDir(), paste0(species_name,"_biasfile_",j,".asc"))
+      tmp <- file.path(tempdir(), paste0(species_name,"_biasfile_",j,".asc"))
       if(file.exists(tmp))
         file.remove(tmp)
     })
@@ -1158,136 +1047,53 @@ block_cv_maxent <- function(loc_dat, env_dat,
       trainingsampfile = file.path(dirs_to_create[j],'sptrain.csv')
       write.csv(training_loc, trainingsampfile, row.names=FALSE)
 
+      training_block <- terra::vect(training_block)
+
       # environmental layers
       if(env_data_flag){
+        env_bg0 <- terra::rast(env_dat)
+        # set environmental layers extent to training block extent
+        env_bg <- terra::crop(env_bg0, training_block)
 
-        env_bg0 <- stars::st_as_stars(env_dat)
-
-        # collpase attributes
-        if(length(stars::st_dimensions(env_bg0))<3)
-          env_bg0 %<>%
-          merge() %>%
-          stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-          stars::st_set_dimensions(names = c("x", "y", "band"))
-
-        env_bg <- env_bg0 %>%
-          as("Raster") %>%
-          setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-          raster::crop(y=as(training_block,"Spatial")) %>%
-          stars::st_as_stars()
-
-        training_block0 <- training_block %>%
-          as("Spatial") %>%
-          raster::rasterize(as(env_bg,"Raster"), getCover=TRUE)
+        # create a mask with cells that covers the training block
+        training_block0 <- terra::rasterize(training_block, env_bg, cover=TRUE)
         training_block0[training_block0==0] <- NA
 
         training_bg <-try({
           names(env_bg) <- strip_extension(names(env_bg))
-          env_bg %>%
-            as("Raster") %>%
-            setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-            raster::mask(mask=training_block0) %>%
-            stars::st_as_stars()
-        })
+          terra::mask(env_bg, mask=training_block0)
+        },silent=TRUE)
 
-        if(inherits(training_bg,"try-error"))
+        if(inherits(training_bg,"try-error")){
+          message(training_bg)
           stop("Unable to read environmental layers from data env_dat. Please make sure all the layers have the same dimensions.")
-      }
-      else if(env_dir_flag){
-        env_bg0 <- try(env_dat %>%
-                        read_layers(),silent=TRUE)
-
-        if(inherits(env_bg0,"try-error")){
-          cat(env_bg0)
-          stop("Unable to read environmental raster layers.")
         }
 
-        training_bg <-try({
-          names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
-
-          if(inherits(env_bg0,"stars")){
-
-            # collpase attributes
-            if(length(stars::st_dimensions(env_bg0))<3)
-              env_bg0 %<>%
-              merge() %>%
-              stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-              stars::st_set_dimensions(names = c("x", "y", "band"))
-
-            # set environmental layers extent to training block extent
-            tmp <- suppressMessages(env_bg0 %>%
-                                      as("Raster") %>%
-                                      setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-                                      raster::crop(y=as(training_block,"Spatial")) %>%
-                                      stars::st_as_stars())
-
-            st_dim <- attr(tmp,"dimension")
-            # ugly work-around when crop returns crap
-            if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
-
-              env_bg <- as(env_bg0,"Raster") %>%
-                setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-                raster::crop(y=as(training_block,"Spatial"))
-
-              training_block0 <- training_block %>%
-                as("Spatial") %>%
-                raster::rasterize(env_bg, getCover=TRUE)
-              training_block0[training_block0==0] <- NA
-
-              env_bg %>%
-                raster::mask(mask=training_block0) %>%
-                stars::st_as_stars()
-            }else{
-              # create a mask with cells that covers the training block
-              training_block0 <- training_block %>%
-                as("Spatial") %>%
-                raster::rasterize(as(tmp,"Raster"), getCover=TRUE)
-              training_block0[training_block0==0] <- NA
-
-              tmp %>%
-                as("Raster") %>%
-                setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-                raster::mask(mask=training_block0) %>%
-                stars::st_as_stars()
-            }
-
-          }else{
-
-            # set environmental layers extent to training block extent
-            env_bg <- env_bg0 %>%
-              raster::crop(y=as(training_block,"Spatial"))
-
-            # create a mask with cells that covers the training block
-            training_block0 <- training_block %>%
-              as("Spatial") %>%
-              raster::rasterize(env_bg, getCover=TRUE)
-            training_block0[training_block0==0] <- NA
-
-            env_bg %>%
-              raster::mask(mask=training_block0) %>%
-              raster::stack()
-          }
-
-        })
-
-        if(inherits(training_bg,"try-error"))
-          stop("Unable to read environmental layers from ",env_dat,". Please make sure all the layers have the same dimensions.")
       }
+      else if(env_dir_flag){
+        env_bg0 <- read_layers(env_dat)
+        training_bg <-try({
+          names(env_bg0) <- if(anyNA(strip_extension(names(env_bg0))))  names(env_bg0) else strip_extension(names(env_bg0))
+          env_bg <- terra::crop(env_bg0, training_block)
+          # create a mask with cells that covers the training block
+          training_block0 <- terra::rasterize(training_block, env_bg, cover=TRUE)
+          training_block0[training_block0==0] <- NA
+          terra::mask(env_bg, mask=training_block0)
+        })
+      }
+
       dn <- file.path(dirs_to_create[j],'env')
       if(!dir.exists(dn)) dir.create(dn)
 
-      if(inherits(training_bg,"stars"))
-        training_bg %<>%
-        split("band") %>%
-        setNames(stars::st_dimensions(env_bg0)$band$values)
-
       # save layers
-      n_layers <- if(inherits(training_bg,"RasterStack")) raster::nlayers(training_bg) else length(training_bg)
+      if(!inherits(training_bg, c("SpatRaster", "SpatRasterDataset"))) training_bg <- terra::rast(training_bg)
+      n_layers <- terra::nlyr(training_bg)
       for(l in 1:n_layers){
-        training_bg_cvrt <- if(inherits(training_bg,"RasterStack"))  training_bg[[l]] else as(training_bg[l],"Raster")
-        raster::writeRaster(training_bg_cvrt, file.path(dn, paste0(names(training_bg)[l],'.asc')), format='ascii', overwrite=TRUE)
+        terra::writeRaster(training_bg[[l]],
+                           file.path(dn, paste0(names(training_bg)[l],'.asc')),
+                           NAflag = -9999,
+                           overwrite=TRUE)
       }
-
 
       #-------------------------
       #= b. get the testing data
@@ -1296,76 +1102,52 @@ block_cv_maxent <- function(loc_dat, env_dat,
         dplyr::bind_cols(as.data.frame(sf::st_coordinates(sf_loc_data[!is_training_loc,])))
 
       # add environmental variables
-      if(inherits(env_bg0,"stars")){
-        env_bg0 %<>%
-          split("band") %>%
-          setNames(stars::st_dimensions(env_bg0)$band$values)
-        testing_loc <- testing_loc %>%
-          dplyr::bind_cols(map_lfd(env_bg0,function(x) raster::extract(as(x,"Raster"),.[,-1]))) %>%
-          na.omit()
-      }else{
-        testing_loc <- testing_loc %>%
-          dplyr::bind_cols(raster::extract(env_bg0,.[,-1]) %>% as.data.frame(row.names = NULL)) %>%
-          na.omit()
-      }
+      testing_loc <- testing_loc %>%
+      dplyr::bind_cols(terra::extract(env_bg0,.[,-1], ID=FALSE) %>% as.data.frame(row.names = NULL)) %>%
+      na.omit()
 
       # check biasfile option
       if(!is.null(maxent_settings[["biasfile"]])){
+
         biasfile <- maxent_settings[["biasfile"]]
+
         if(file.exists(biasfile) && !dir.exists(biasfile)){
-          bias_file <- try(biasfile %>%
-                             raster::raster() %>%
-                             raster::crop(y=as(training_block,"Spatial")) %>%
-                             stars::st_as_stars(),silent=TRUE)
 
-          if(!inherits(bias_file,"try-error")){
-            st_dim <- attr(bias_file,"dimension")
-            if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
+          bias_file <- try(terra::rast(biasfile) %>% terra::crop(training_block),silent=TRUE)
 
-              biasfile0 <- biasfile %>%
-                raster::raster() %>%
-                raster::crop(y=as(training_block,"Spatial"))
+          if(inherits(bias_file,"try-error")) stop(bias_file)
 
-              # create a mask with cells that covers the training block
-              training_block0 <- training_block %>%
-                as("Spatial") %>%
-                raster::rasterize(biasfile0, getCover=TRUE)
-              training_block0[training_block0==0] <- NA
+          # create a mask with cells that covers the training block
+          training_block0 <- terra::rasterize(training_block, bias_file, cover=TRUE)
+          training_block0[training_block0==0] <- NA
 
-              bias_file <- biasfile0 %>%
-                #raster::crop(y=as(training_block,"Spatial")) %>%
-                raster::mask(mask=training_block0)
-            }else{
-              # create a mask with cells that covers the training block
-              training_block0 <- training_block %>%
-                as("Spatial") %>%
-                raster::rasterize(as(bias_file,"Raster"), getCover=TRUE)
-              training_block0[training_block0==0] <- NA
+          # save bias file raster in temporary folder
+          outfile <-file.path(tempdir(),paste0(species_name,"_biasfile_",j,".asc"))
 
-              bias_file %<>%
-                as("Raster") %>%
-                raster::mask(mask=training_block0)
-            }
-            # save bias file raster in temporary folder
-            outfile <-file.path(raster::tmpDir(),paste0(species_name,"_biasfile_",j,".asc"))
-            raster::writeRaster(bias_file, outfile, format="ascii", overwrite=TRUE)
-            # set the new biasfile file path
-            maxent_settings[["biasfile"]] <- outfile
-            maxent_settings[["biastype"]] <- 3
-            # add sampling probs to test data
-            extrct <- raster::extract(raster::raster(biasfile),testing_loc[,2:3],df=TRUE) %>%
-              subset(select=2) %>%
-              setNames(paste0(species_name,"_biasfile_",j))
-            testing_loc <- testing_loc %>%
-              dplyr::bind_cols(extrct)
-          }else{
+          bias_file = terra::mask(bias_file,
+                                  mask=training_block0,
+                                  filename=outfile,
+                                  NAflag = -9999,
+                                  overwrite=TRUE)
+
+          # set the new biasfile file path
+          maxent_settings[["biasfile"]] <- outfile
+          maxent_settings[["biastype"]] <- 3
+
+          # add sampling probs to test data
+          extrct <- terra::extract(terra::rast(biasfile),testing_loc[,2:3]) %>%
+            subset(select=2) %>%
+            setNames(paste0(species_name,"_biasfile_",j))
+
+          testing_loc <- testing_loc %>%
+            dplyr::bind_cols(extrct)
+        }else{
             # remove biasfile option(s)
             maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
           }
-        }else{
-          # remove biasfile option(s)
-          maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
-        }
+      }else{
+        # remove biasfile option(s)
+        maxent_settings<- maxent_settings[!names(maxent_settings)=="biasfile"]
       }
 
       # save samples with data
@@ -1386,7 +1168,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       }
 
       # set the maximum number of background samples
-      maxbackground <- min(sapply(training_bg, function(x) sum(!is.na(x))))
+      maxbackground <- min(unlist(terra::global(training_bg, fun="notNA")))
 
       if(length(maxent_settings)>0L){
         if("maximumbackground" %in% names(maxent_settings))
@@ -1415,7 +1197,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
       model_trained <- try(do.call(maxent, cv.model.args),silent=TRUE)
 
       if(inherits(model_trained,"try-error")){
-        cat(model_trained)
+        message(model_trained)
         stop("Maxent model failed. Please check maxent.log file for more informations.")
       }
 
@@ -1423,21 +1205,21 @@ block_cv_maxent <- function(loc_dat, env_dat,
       model_output <- get_maxent_output(outputdir_path[1], eval_metrics=eval_metrics, index=j)
 
       if("ic" %in% eval_metrics){
-        if(inherits(training_bg,"stars")){
-          rst <- raster::stack(lapply(1:length(training_bg), function(l) as(training_bg[l], "Raster")))
-          names(rst) <- names(training_bg)
-        }else{
+        # if(inherits(training_bg,"stars")){
+        #   rst <- raster::stack(lapply(1:length(training_bg), function(l) as(training_bg[l], "Raster")))
+        #   names(rst) <- names(training_bg)
+        # }else{
           rst <- training_bg
-        }
+        #}
         occ <- training_loc[,-1]
         lbds <- list.files(outputdir_path[1], pattern="\\.lambdas",full.names=TRUE)
         if(length(lbds)==0L)
           warning("Unable to find lambdas file in directory ", outputdir_path[1])
 
-        pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=rst, quiet=TRUE)$prediction_raw, silent=TRUE)
+        pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=raster::stack(rst), quiet=TRUE)$prediction_raw, silent=TRUE)
 
         if(inherits(pred_raw,"try-error")){
-          print(geterrmessage())
+          message(pred_raw)
           warning("An error occurred when predicting maxent model located in ", outputdir_path[1])
         }
 
@@ -1476,17 +1258,17 @@ block_cv_maxent <- function(loc_dat, env_dat,
             if(length(lbds)==0L)
               warning("Unable to find lambdas file in directory ", new_output_directory)
 
-            pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=rst, quiet=TRUE)$prediction_raw, silent=TRUE)
+            pred_raw <- try(rmaxent::project(lambdas=lbds, newdata=raster::stack(rst), quiet=TRUE)$prediction_raw, silent=TRUE)
 
             if(inherits(pred_raw,"try-error")){
-              print(geterrmessage())
+              message(pred_raw)
               warning("An error occurred when predicting maxent model located in ", new_output_directory)
             }
 
             IC <- try(rmaxent::ic(x=pred_raw, occ=occ, lambdas = lbds),silent=TRUE)
 
             if(inherits(IC,"try-error")){
-              print(geterrmessage())
+              message(pred_raw)
               IC<- tryCatch(data.frame(k=rmaxent::n_features(lbds),ll=NA, AIC=NA, AICc=NA, BIC=NA), error=function(err) data.frame(k=0,ll=NA, AIC=NA, AICc=NA, BIC=NA))
             }
 
@@ -1510,7 +1292,7 @@ block_cv_maxent <- function(loc_dat, env_dat,
 
       # remove temporary file if needed
       on.exit({
-        tmp <- file.path(raster::tmpDir(), paste0(species_name,"_biasfile_",j,".asc"))
+        tmp <- file.path(tempdir(), paste0(species_name,"_biasfile_",j,".asc"))
         if(file.exists(tmp))
           file.remove(tmp)
       })
@@ -1549,7 +1331,7 @@ loocv_geo <- function(pr, bg, algorithm="idw", tr=seq(from=1.E-3, to=0.99, by=1.
     )
 
     if(inherits(model,"try-error")){
-      cat(model)
+      message(model)
       stop("Unable to train the model")
     }
 
@@ -1587,7 +1369,7 @@ calc_omission_rate <- function(model,  occ_train, occ_test, threshold = 10) {
 }
 
 
-#' utility function: selects the best model based off a set of evaluation metrics.
+#' utility function: selects the best model based on a set of evaluation metrics.
 #' @param model_output A dataframe object returned by the function \code{block_cv_maxent}.
 #' @param eval_metrics A vector of evaluation metric names. Evaluation metrics available are: `auc`, `omission_rate`,`tss`, `ic`.
 #' @param tolerance A numeric integer specifying the number of decimals to account for when comparing performance metrics. Default is 3 digits.
@@ -1595,6 +1377,7 @@ calc_omission_rate <- function(model,  occ_train, occ_test, threshold = 10) {
 get_best_maxent_model <- function(model_output, eval_metrics, tolerance=3){
 
   metric <- sortDirection <- c()
+
   for(j in eval_metrics){
 
     switch(j,
@@ -1627,7 +1410,7 @@ get_best_maxent_model <- function(model_output, eval_metrics, tolerance=3){
   if("varying_param" %in% names(model_output)){
     avg_metric <- model_output %>%
       dplyr::filter(k>0) %>%
-      dplyr::select(c("varying_param",all_of(metric))) %>%
+      dplyr::select(c("varying_param",dplyr::all_of(metric))) %>%
       dplyr::group_by(varying_param) %>%
       dplyr::summarise_at(metric, list(mean), na.rm=TRUE) %>%
       as.data.frame(row.names=NULL) %>%

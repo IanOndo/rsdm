@@ -18,8 +18,8 @@ read_layers <- function(path, nlayers=NULL){
   if(is.null(nlayers))
     nlayers = length(list_layers)
 
-  # try with stars
-  layers <- try(stars::read_stars(head(list_layers, nlayers)),silent=TRUE)
+  # read data
+  layers <- try(terra::rast(head(list_layers, nlayers)),silent=TRUE)
 
   if(inherits(layers,"try-error")){
 
@@ -27,7 +27,7 @@ read_layers <- function(path, nlayers=NULL){
       raster::stack()
 
     if(inherits(layers,"try-error")){
-      cat(layers)
+      message(layers)
       stop("Unable to read raster layers. See error message.")
     }
   }
@@ -40,28 +40,36 @@ read_layers <- function(path, nlayers=NULL){
 #'
 #' crop then mask a raster object with a spatial shape while making sure that boundary cells in contact with the shape are not masked out
 #'
-#' @param x, A `Raster*` object
-#' @param y, A `Spatial*` object
+#' @param x, A `SpatRaster*` or `Raster*` object
+#' @param y, A `sf` or `SpatVector*` object
 #' @return A `Raster*` object
 #' @export
 maskCover <- function(x, y, do.crop=TRUE, ...){
 
   # check inputs
-  stopifnot(inherits(x,c("RasterLayer","RasterStack")))
-  stopifnot(inherits(y,c("SpatialPolygons","SpatialPolygonsDataFrame","SpatialLines","SpatialPoints")))
+  stopifnot(inherits(x,c("RasterLayer","RasterStack","SpatRaster","SpatRasterDataset")))
+  stopifnot(inherits(y,c("sf","SpatVector")))
+
+  # set up functions
+  if(!inherits(x,c("SpatRaster","SpatRasterDataset")))
+    x <- terra::rast(x)
+
+  if(inherits(y,"sf"))
+    y <- terra::vect(y)
 
   # first match the extent of the vector shape
   if(do.crop)
-    stack_reference <- raster::crop(x, y)
+    stack_reference <- terra::crop(x, y)
   else
     stack_reference <- x
 
   # then identify cells that at least partially overlap with the shape
-  mask_raster <- raster::rasterize(y, stack_reference[[1]], getCover=TRUE)
+  mask_raster0 <- terra::rasterize(y, stack_reference[[1]], cover=TRUE)
 
   # finally mask out cells not overlapping with the shape
-  mask_raster[mask_raster==0] <- NA
-  raster::stack(raster::mask(stack_reference,mask=mask_raster,...))
+  mask_raster <- terra::classify(mask_raster0,cbind(0,NA)) #mask_raster[mask_raster==0] <- NA
+
+  return(terra::mask(stack_reference,mask=mask_raster,...))
 }
 
 

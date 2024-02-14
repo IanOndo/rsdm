@@ -13,7 +13,7 @@
 queryGBIF <- function(species_name, user=NULL, email=NULL, pwd=NULL, gbif_download_dir=NULL, rank='species', kingdom='Plantae', status_ping=3, time_out=300, index=NULL, check_output="", verbose=TRUE){
 
   if(missing(species_name) | any(!is.character(species_name)) | any(species_name=="")){
-    stop("Please provide a valid species name")
+    stop("Please provide a valid species name vector")
   }
 
   if(is.null(user) | is.null(email) |is.null(pwd)){
@@ -48,7 +48,7 @@ queryGBIF <- function(species_name, user=NULL, email=NULL, pwd=NULL, gbif_downlo
   tmp.args    <- c("",'species_name', 'user','email', 'pwd', 'gbif_download_dir', 'rank', 'kingdom')
   call.tmp    <- call.fun[match(tmp.args, names(call.fun),nomatch=0)]
 
-  gbif_query_fn <- file.path(dirname(raster::rasterTmpFile()),"gbif_query.rds")
+  gbif_query_fn <- file.path(tempdir(),"gbif_query.rds")
   if(file.exists(gbif_query_fn)){
     gbif_query  	<- readRDS(gbif_query_fn)
     if(identical(call.tmp,gbif_query[[1]])){
@@ -93,6 +93,7 @@ queryGBIF <- function(species_name, user=NULL, email=NULL, pwd=NULL, gbif_downlo
                       email = email),silent=TRUE)
 
     if(inherits(occ_query,'try-error')){
+      message(occ_query)
       cat('\n')
       cat(paste('<< Unable to obtain occurrence records for:', paste(head(species_name),collapse=", "),'.... [Aborting]...>>\n'))
       return(NULL)
@@ -126,6 +127,7 @@ queryGBIF <- function(species_name, user=NULL, email=NULL, pwd=NULL, gbif_downlo
   occ_data <- try(rgbif::occ_download_get(occ_query, path = gbif_download_dir, overwrite=TRUE), silent=TRUE)  # if too large to download into R- download manually through GBIF or split into parts above, if
 
   if(inherits(occ_data,'try-error') ){#|| attr(occ_data,'size')==0L
+    message(occ_data)
     cat('\n')
     if(verbose) cat('...<< Unable to download data from GBIF to local machine >>...\n')
     return(NULL)
@@ -182,6 +184,7 @@ queryGBIF <- function(species_name, user=NULL, email=NULL, pwd=NULL, gbif_downlo
     data.table::setkey(gbifDATA, 'species')
 
   }else{
+    message(gbifDATA)
     cat('\n')
     cat('...<< Unable to import data from gbif database >>...\n')
     return(NULL)

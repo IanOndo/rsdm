@@ -21,7 +21,7 @@ map_raster(
 )
 }
 \arguments{
-\item{x}{A RasterLayer or stars object, or a path to the raster layer file.}
+\item{x}{A RasterLayer or SpatRaster object, or a path to the raster layer file.}
 
 \item{y}{An optional sf object describing spatial features to be displayed on the map: points, polygons,...etc.}
 

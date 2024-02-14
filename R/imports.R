@@ -30,3 +30,12 @@ magrittr::`%$%`
 #' @importFrom foreach %dopar%
 #' @seealso \code{foreach::\link[foreach:do]{\%dopar\%}}
 foreach::`%dopar%`
+
+#' Distance function
+#'
+#' @name haversine
+#' @rdname haversine
+#' @export
+#' @importFrom spatialrisk haversine
+#' @seealso \code{spatialrisk::\link[spatialrisk:haversine]{haversine}}
+spatialrisk::haversine

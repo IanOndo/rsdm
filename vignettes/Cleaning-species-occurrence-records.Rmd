@@ -46,30 +46,42 @@ options("rgdal_show_exportToProj4_warnings"="none")
 We need to install the following set of R packages to successfully run the codes in this vignette:
 
 - **CoordinateCleaner** [@CCleaner]
-- **rWCVP** [@rwcvp]
+- **TDWG** [@TDWG]
 - **dplyr** [@dplyr]
 ::::
 
 # Introduction 
 Cleaning and filtering out data that look spurious or do not fit the purpose of a study is probably the most important step in any data science project. It is generally a good idea to start your data curation by applying general filters that would exclude observations that do not fit the scope of your study, such as records out of their expected spatial and temporal range. Then, apply more specific filters to refine your selection.  
   
-In this vignette, we are going to use the World Checklist of Vascular Plants (WCVP) [@WCVP] distribution data and the R package  [**\textcolor{blue}{\underline{CoordinateCleaner}}**](https://cran.r-project.org/web/packages/CoordinateCleaner/CoordinateCleaner.pdf), to exclude occurrence locations outside of species known range and common georeferencing errors.
+In this vignette, we are going to use the World Checklist of Vascular Plants (WCVP) [@WCVP] distribution data and the R packages  [**\textcolor{blue}{\underline{TDWG}}**](https://github.com/IanOndo/TDWG) and [**\textcolor{blue}{\underline{CoordinateCleaner}}**](https://cran.r-project.org/web/packages/CoordinateCleaner/CoordinateCleaner.pdf), to exclude occurrence locations outside of species known range and common georeferencing errors.
 
-# I. *Cleaning records outside of species range*
-Let's assume that 
+# I. *Cleaning records outside of species range* (for vascular plants only !)
+Let's assume that you loaded your occurrence records in the dataframe `mySpecies_occurrences`. We are going to use the package **TDWG** [@TDWG] to filter out records sampled outside of the known range of your species according to the WCVP database and the World Geographical Scheme for Recording Plant Distributions (WGSRPD). 
+
 ```{r data-cleaning-WCVP, eval=FALSE, include=TRUE}
+library(TDWG)
 
-clean0 <- TDWG::rangeCleaner(mySpecies_occurrences,
-                   what='occurrences',
-                   working_dir=OUTPUT_DIR,
+# check the manual help for more information about the function `coordinatesCleaner`
+clean0 <- TDWG::coordinatesCleaner(
+                  # your species occurrence dataframe
+                   mySpecies_occurrences,
+                   # indicate the species_name
+                   species_name = "Abies spectabilis",
+                   # indicate the establishment range you want to filter against
+                   # both <=> combined native+introduced range
                    status='both',
+                   # geographic level at which the filter must be applied
                    initial_level=2,
+                   # do not run in parallel
                    do.parallel=FALSE,
-                   use_name_matching=FALSE,
+                   # return the full dataset (i.e. all columns) with filtered occurrences
                    full_data = TRUE,
+                   # run quietly
                    verbose=FALSE)
 
 ```
+If everything runs smoothly, `clean0` should be your initial dataset but with the occurrence records sampled outside of your species range removed.
+
 
 # II. *Cleaning unfit and mis-georefenced records*
 We use metadata information kept from our primary downloads (see vignette *\underline{Data gathering and pre-processing}*) to exclude locations:
@@ -88,6 +100,8 @@ biodiversity institutions (museums, zoos, botanical gardens, universities)
 - within 1km buffer distance from the headquarters of GBIF
 
 ```{r data-cleaning-ccleaner, eval=FALSE, include=TRUE}
+library(dplyr)
+library(CoordinateCleaner)
 
 #---------------------------------------------------------
 ##= 1. Remove records beyond a certain date
