@@ -15,6 +15,9 @@
 #' @export
 make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("nearest.center"), grid_res = 0.1666667, coastline = NULL, sf=TRUE, verbose=TRUE, ...){
 
+  if(missing(kdat)) stop("kdat is missing with no value by default.")
+  if(ncol(kdat)!=2) stop("kdat must be a two-column matrix or dataframe.")
+
   #==================================
   # 1. Partition occurrence records #
   #==================================
@@ -44,7 +47,7 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
       kdatAssigned <- try(do.call(pamEqual,list_args_partalgo),silent=TRUE)
 
       if(inherits(kdatAssigned,"try-error") || !kdatAssigned$converged){
-        if(inherits(kdatAssigned,"try-error")) print(kdatAssigned) else cat("PAM partioning algorithm did not converge\n")
+        if(inherits(kdatAssigned,"try-error")) message(kdatAssigned) else cat("PAM partioning algorithm did not converge\n")
 
         if(verbose) cat("Trying kmeans algorithm...\n")
 
@@ -62,7 +65,7 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
             kdatAssigned <- try(do.call(kmeansEqual,list_args_partalgo),silent=TRUE)
 
             if(inherits(kdatAssigned,"try-error") || !kdatAssigned$converged){
-              if(inherits(kdatAssigned,"try-error")) print(kdatAssigned) else cat("Kmeans partioning algorithm did not converge\n")
+              if(inherits(kdatAssigned,"try-error")) message(kdatAssigned) else cat("Kmeans partioning algorithm did not converge\n")
               stop("Unable to partition the data")
             }
           }
@@ -92,7 +95,7 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   }
 
   if(inherits(kdatAssign,"try-error")){
-    print(kdatAssign)
+    message(kdatAssign)
     stop("Unable to partition the data")
   }else if(!kdatAssign$converged){
     cat("Partioning algorithm did not converge with minimum 2 points per geographic block\n")
@@ -111,7 +114,7 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   # 2. Build convex hulls around each group #
   #==========================================
   if(verbose) cat('> [...building convex hulls around groups...]\n')
-  proj <- if(is.null(bg) || is.na(sf::st_crs(bg))) '+proj=longlat +datum=WGS84' else sf::st_crs(bg)
+  proj <- if(is.null(bg) || is.na(sf::st_crs(bg))) 4326 else sf::st_crs(bg)
   sf_loc_data <- kdatAssigned$Data %>%
     sf::st_as_sf(coords=c('lon', 'lat'), crs=sf::st_crs(proj))
   # create the first convex hull
@@ -119,7 +122,8 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   sf_loc_grp <- sf_loc_data %>%
     dplyr::filter(assigned==j)
 
-  sf_block <- sf::st_as_sf(data.frame(kgroup=j, geometry=sf::st_buffer(sf::st_convex_hull(sf::st_union(sf_loc_grp)), dist=0.01)))
+  sf_block <- sf::st_as_sf(data.frame(kgroup=j,
+                                      geometry=sf::st_buffer(sf::st_convex_hull(sf::st_union(sf_loc_grp)), dist=0.01)))
 
   # add other hulls
   j = j + 1
@@ -159,16 +163,17 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
     if(is.null(coastline))
       coastline = RGeodata::terrestrial_lands
 
-    domain <- try(do.call(make_geographic_domain, append(list(loc_dat=kdat, verbose=FALSE, land_file=coastline), domain.args)), silent=TRUE)
+    domain <- try(do.call(make_geographic_domain, append(list(loc_dat=kdat, verbose=verbose, land_file=coastline), domain.args)), silent=TRUE)
 
     if(inherits(domain,'try-error')){
-      cat(domain)
+      message(domain)
       stop("Unable to build a background from the set of points")
     }
 
     # fasterize the domain
-    raster_template  <- tryCatch(raster::raster(domain, res = grid_res), error=function(err) raster::raster(as(domain,"Spatial"), res = grid_res))
-    bg <- suppressMessages(fasterize::fasterize(sf::st_cast(domain,"MULTIPOLYGON"), raster_template) - 1 )# -1 to ensure background is a distinct group
+    raster_template  <- try(terra::rast(terra::vect(domain), res = grid_res),silent=TRUE)
+    if(inherits(raster_template,"try-error")) {message(raster_template); stop("Cannot create raster from the training area")}
+    bg <- suppressMessages(fasterize::fasterize(sf::st_cast(domain,"MULTIPOLYGON"), raster::raster(raster_template)) - 1 )# -1 to ensure background is a distinct group
   }else if(!inherits(bg,"RasterLayer")){
     stop('bg must be a RasterLayer object')
   }
@@ -179,7 +184,11 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   #bg_fasterized <- raster::mask(fasterize::fasterize(sf_block_disjoint, bg, field="kgroup", background=0), bg)
   # make sure all groups are composed of polygons
   sf_block_disjoint %<>% sf::st_collection_extract(type="POLYGON" )%>% sf::st_make_valid()
-  bg_fasterized <- raster::mask(fasterize::fasterize(sf::st_cast(sf_block_disjoint,"POLYGON",warn=FALSE), bg, field="kgroup", background=0), bg)
+  bg_fasterized <- terra::mask(terra::rast(fasterize::fasterize(sf::st_cast(sf_block_disjoint,"POLYGON",warn=FALSE),
+                                                     bg,
+                                                     field="kgroup",
+                                                     background=0)),
+                                terra::rast(bg))
   # assign occurrence records cells outside of the block to their corresponding group
   # if(nrow(sf_block_intersect)>0L){
   #   cell_occ <- kdatAssigned$Data %>%
@@ -188,17 +197,19 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   #     purrr::map_lgl(., function(x) length(x) == 0L ) %>%
   #     dplyr::filter(kdatAssigned$Data, .)
   # }
-  tbl <- data.table::data.table(cell=which(raster::values(bg_fasterized)>=0), key="cell")
-  tbl[,`:=`(Group = as.character(bg_fasterized[cell]),
-            Lon = raster::xFromCell(bg_fasterized, cell),
-            Lat = raster::yFromCell(bg_fasterized, cell))]
+  tbl <- data.table::data.table(cell=which(terra::values(bg_fasterized)>=0), key="cell")
+  tbl[,`:=`(Group = as.character(unlist(bg_fasterized[cell])),
+            Lon = terra::xFromCell(bg_fasterized, cell),
+            Lat = terra::yFromCell(bg_fasterized, cell))]
   data.table::setkey(tbl, 'Group')
 
   switch(assign_method,
        "nearest.center" = {
          centers <- kdatAssigned$Centers
-         tbl[, kgroup := ifelse(Group=='0', as.character(which.min(geosphere::distGeo(cbind(Lon, Lat), centers))), Group), by=seq_len(NROW(tbl))]
-         bg_fasterized[tbl['0'][['cell']]] <- tbl['0'][['kgroup']]
+         tbl[Group=='0', kgroup := as.character(which.min(geosphere::distGeo(cbind(Lon, Lat), centers))),
+             by=seq_len(NROW(subset(tbl,Group=='0')))]
+         #tbl[, kgroup := ifelse(Group=='0', as.character(which.min(geosphere::distGeo(cbind(Lon, Lat), centers))), Group), by=seq_len(NROW(tbl))]
+         bg_fasterized[tbl['0'][['cell']]] <- as.numeric(tbl['0'][['kgroup']])
        },
        "nearest.cluster" = {
          kgroup <- tbl['0'][, .(Lon,Lat)] %>%
@@ -217,33 +228,35 @@ make_geographic_block <- function(kdat, k = 3, bg = NULL, assign_method=c("neare
   data.table::setkey(tbl, 'kgroup')
   comb <- utils::combn(1:k,k-1)
   if(!sf){
-    bg_masks <- stack()
+    # TODO: revise this piece of code, it does not return what is is supposed to
+    bg_masks <- terra::rast()
     for(j in 1:k){
       blcks <- comb[,j]
       blck <- setdiff(1:k,blcks)
-      cells_group <- subset(tbl, kgroup %in% blcks, select=cell)$cell#c(tbl[as.character(blcks[1])][['cell']], tbl[as.character(blcks[2])][['cell']])
+      cells_group <- tbl %>% dplyr::filter(kgroup %in% blcks) %>% dplyr::pull(cell)#c(tbl[as.character(blcks[1])][['cell']], tbl[as.character(blcks[2])][['cell']])
       non_cells_group <- tbl[as.character(blck)][['cell']]
       bg_group <- bg_fasterized
-      bg_group[cells_group] <- "1"
-      bg_group[non_cells_group] <- "0"
-      bg_masks <- raster::addLayer(bg_masks, bg_group)
+      bg_group[cells_group] <- 1
+      bg_group[non_cells_group] <- 0
+      bg_masks <- c(bg_masks, bg_group)
     }
     names(bg_masks) <- apply(comb,2,function(x) paste(letters[x],collapse="_"))
   }else{
+
     bg_masks <- bg_fasterized %>%
-      raster::setValues(as.numeric(raster::values(.))) %>%
-      stars::st_as_stars() %>%
+      terra::setValues(as.numeric(terra::values(.))) %>%
+      terra::as.polygons(na.rm=T) %>%
       sf::st_as_sf(as_points=FALSE, merge=TRUE) %>%
       sf::st_cast("MULTIPOLYGON") %>%
       sf::st_make_valid() %>%
       st_remove_holes()
 
     # switch off Spherical geometry (s2)
-    if(any(!bg_masks %>% sf::st_is_valid())){
+    if(any(!sf::st_is_valid(bg_masks))){
       sf_use_s2(FALSE)
       bg_masks <- bg_fasterized %>%
-        raster::setValues(as.numeric(raster::values(.))) %>%
-        stars::st_as_stars() %>%
+        terra::setValues(as.numeric(terra::values(.))) %>%
+        terra::as.polygons(na.rm=T) %>%
         sf::st_as_sf(as_points=FALSE, merge=TRUE) %>%
         sf::st_cast("MULTIPOLYGON") %>%
         sf::st_make_valid()
@@ -276,17 +289,17 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
     cat('#---------------------------------------------------------------------------\n')
   }
 
-  if(!any(inherits(kdat, c("matrix","data.frame","data.table"))))
+  if(missing(kdat)) stop("kdat is missing with no value by default.")
+
+  if(!inherits(kdat, c("matrix","data.frame","data.table")))
     stop("Argument kdat must be a matrix, a data.frame or a data.table")
-  if(nrow(kdat) < 2)
-    stop("Input data must have at least 2 coordinates.")
+  if(ncol(kdat) != 2)
+    stop("Input data must have 2 columns of geographic coordinates.")
 
   if(!is.numeric(k))
     stop("Argument 'k' must be numeric.")
-  if(k<0)
-    stop("The number of cluster must be > 0.")
   if(k<2)
-    warning("The number of group requested is < 2.")
+    stop("The number of group requested is < 2.")
 
   if(!is.numeric(iter_max))
     stop("Argument 'iter_max' must be numeric")
@@ -310,8 +323,8 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
   # transform to cartesian coordinates
   centers %<>%
     as.data.frame(row.names=NULL) %>%
-    sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
-    sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
+    sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
+    sf::st_transform(crs=sf::st_crs("+proj=eqearth")) %>%
     sf::st_coordinates()
 
   if(is.matrix(kdat))
@@ -320,8 +333,8 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
 
   # retrieve coordinates if needed
   if(!all(c("lon","lat") %in% colnames(kdat))){
-    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|[Xx]",x = names(kdat))[1]
-    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|[Yy]",x = names(kdat))[1]
+    id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|^[Xx]$",x = names(kdat))[1]
+    id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|^[Yy]$",x = names(kdat))[1]
     coordHeaders <- c(id_x_lon, id_y_lat)
     kdat %<>%
       dplyr::rename(lon = coordHeaders[1], lat = coordHeaders[2])
@@ -342,8 +355,8 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
 
     kclust <- kdat %>%
       dplyr::select(lon,lat) %>%
-      sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
-      sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
+      sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
+      sf::st_transform(crs=sf::st_crs("+proj=eqearth")) %>%
       sf::st_coordinates() %>%
       stats::kmeans(centers)
 
@@ -358,7 +371,7 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
     # transform back to lon/lat
     centers %<>%
       as.data.frame(row.names=NULL) %>%
-      sf::st_as_sf(coords=1:2, crs=st_crs("+proj=robin")) %>%
+      sf::st_as_sf(coords=1:2, crs=sf::st_crs("+proj=eqearth")) %>%
       sf::st_transform(crs=sf::st_crs(4326)) %>%
       sf::st_coordinates()
 
@@ -526,8 +539,8 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
     NewCenters <- kdat %>%
       dplyr::filter(assigned == j) %>%
       dplyr::select(lon, lat) %>%
-      sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
-      sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
+      sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
+      sf::st_transform(crs=sf::st_crs("+proj=eqearth")) %>%
       sf::st_coordinates() %>%
       stats::kmeans(1) %$% centers
     while(j < k){
@@ -536,8 +549,8 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
         rbind(kdat %>%
                 dplyr::filter(assigned == j) %>%
                 dplyr::select(lon, lat) %>%
-                sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
-                sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
+                sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
+                sf::st_transform(crs=sf::st_crs("+proj=eqearth")) %>%
                 sf::st_coordinates() %>%
                 stats::kmeans(1) %$% centers)
     }
@@ -552,7 +565,7 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
     if(plot){
       cent <- centers %>%
         as.data.frame(row.names=NULL) %>%
-        sf::st_as_sf(coords=1:2, crs=st_crs("+proj=robin")) %>%
+        sf::st_as_sf(coords=1:2, crs=sf::st_crs("+proj=eqearth")) %>%
         sf::st_transform(crs=sf::st_crs(4326)) %>%
         sf::st_coordinates() %>%
         as.data.frame(row.names=NULL)
@@ -576,7 +589,7 @@ kmeansEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random
     kdat$assigned %<>% as.factor()
 
   centers %<>%
-    sf::st_as_sf(coords=1:2, crs=st_crs("+proj=robin")) %>%
+    sf::st_as_sf(coords=1:2, crs=sf::st_crs("+proj=eqearth")) %>%
     sf::st_transform(crs=sf::st_crs(4326)) %>%
     sf::st_coordinates()
 
@@ -603,10 +616,11 @@ pamEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random.se
     cat('#---------------------------------------------------------------------------\n')
   }
 
-  if(!any(inherits(kdat, c("matrix","data.frame","data.table"))))
+  if(missing(kdat)) stop("kdat is missing with no value by default.")
+  if(!inherits(kdat, c("matrix","data.frame","data.table")))
     stop("Argument kdat must be a matrix, a data.frame or a data.table")
-  if(nrow(kdat) < 2)
-    stop("Input data must have at least 2 coordinates.")
+  if(ncol(kdat) != 2)
+    stop("Input data must have 2 columns of geographic coordinates.")
 
   if(!is.numeric(k))
     stop("Argument 'k' must be numeric.")
@@ -856,7 +870,7 @@ pamEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random.se
     NewCenters <- kdat %>%
       dplyr::filter(assigned == j) %>%
       dplyr::select(lon, lat) %>%
-      sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
+      sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
       sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
       sf::st_coordinates() %>%
       cluster::pam(1) %$% list(medoids,id.med)
@@ -869,8 +883,8 @@ pamEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random.se
       pamCenters <- kdat %>%
         dplyr::filter(assigned == j) %>%
         dplyr::select(lon, lat) %>%
-        sf::st_as_sf(coords=1:2, crs=st_crs(4326)) %>%
-        sf::st_transform(crs=sf::st_crs("+proj=robin")) %>%
+        sf::st_as_sf(coords=1:2, crs=sf::st_crs(4326)) %>%
+        sf::st_transform(crs=sf::st_crs("+proj=eqearth")) %>%
         sf::st_coordinates() %>%
         cluster::pam(1) %$% list(medoids,id.med)
 
@@ -888,7 +902,7 @@ pamEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random.se
     if(plot){
       cent <- centers %>%
         as.data.frame(row.names=NULL) %>%
-        sf::st_as_sf(coords=1:2, crs=st_crs("+proj=robin")) %>%
+        sf::st_as_sf(coords=1:2, crs=sf::st_crs("+proj=eqearth")) %>%
         sf::st_transform(crs=sf::st_crs(4326)) %>%
         sf::st_coordinates() %>%
         as.data.frame(row.names=NULL)
@@ -912,7 +926,7 @@ pamEqual <- function(kdat, k = 3, iter_max = 30, tolerance.iter=1e-08, random.se
     kdat$assigned %<>% as.factor()
 
   centers %<>%
-    sf::st_as_sf(coords=1:2, crs=st_crs("+proj=robin")) %>%
+    sf::st_as_sf(coords=1:2, crs=sf::st_crs("+proj=eqearth")) %>%
     sf::st_transform(crs=sf::st_crs(4326)) %>%
     sf::st_coordinates()
 
