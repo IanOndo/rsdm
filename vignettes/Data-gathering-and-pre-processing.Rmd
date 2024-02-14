@@ -45,37 +45,37 @@ options("rgdal_show_exportToProj4_warnings"="none")
 **Package notes:**  
 We need to install the following set of R packages to successfully run the codes in this vignette:
 
-- **UsefulPlants** [@data_table]
+- **UsefulPlants** [@rusefulplants]
 - **rWCVP** [@rwcvp]
 ::::
 
 # Introduction
-In this vignette, we will show how to compile and format occurrence data from various data sources available online, or as zipped (compressed) files using **UsefulPlants** and its companion package **rsdm**. We will focus on two online databases:
+In this vignette, we will show how to compile and format occurrence data from various data sources available online, or as zipped (compressed) files using the package **UsefulPlants** [@rusefulplants] and its companion package **rsdm**. We will focus on two online databases:
 
 - *Global Biodiversity Information Facility* (**GBIF**, [*\underline{https://www.gbif.org}*](https://www.gbif.org))
 
 - *Botanical information and Ecology Network* (**BIEN version 4.1**, [*\underline{https://bien.nceas.ucsb.edu/bien}*](https://bien.nceas.ucsb.edu/bien)) 
 
-Both have R packages facilitating the download of occurrence records directly from R. For example, the function *get_gbifid_* from the R package **taxize** [@taxize] and function *occ_download* from the R package **rgbif** [@rgbif] can be used for matching species names and downloading occurrence records from GBIF respectively, while the function *BIEN_occurrence_species* from the R package **BIEN** [@BIEN]helps to extract occurrence records from the BIEN database.  
+Both have R packages facilitating the download of occurrence records directly from R. For example, the function *get_gbifid_* from the R package **taxize** [@taxize] and function *occ_download* from the R package **rgbif** [@rgbif] can be used for matching species names and downloading occurrence records from GBIF respectively, while the function *BIEN_occurrence_species* from the R package **BIEN** [@BIEN] helps to extract occurrence records from the BIEN database.  
 To our knowledge, other databases such as **RAINBIO** ([\underline{http://rainbio.cesab.org/}](http://rainbio.cesab.org/)), **speciesLink** ([\underline{http://www.splink.org.br/}](http://www.splink.org.br/)), **BioTIME** ([\underline{https://biotime.st-andrews.ac.uk/}](https://biotime.st-andrews.ac.uk/)) or **Genesys** ([\underline{https://www.genesys-pgr.org}](https://www.genesys-pgr.org)) do not provide R packages to access their data, but snapshots of the entire database can be accessed, sometimes on request, and often shared as a (compressed) file. In this case the **data.table** [@data_table] is a very useful R package in terms of efficiency and speed to process these type of datasets.
 
 # I. Download a list of useful plants species names
-Download the useful plants database used in @UsefulPlants [\textcolor{blue}{\underline{here}}](https://www.here.com), and unzip it into a folder, e.g. *"usefulplant_data"*. Then, read in the data and filter as needed:
+Download the useful plants database used in @UsefulPlants [\textcolor{blue}{\underline{here}}](https://www.here.com), and unzip it into a folder, e.g. *"usefulplant_data"* (or alternatively get the data from the R package UsefulPlants [@rusefulplants]). Then, read in the data and filter as needed:
 ```{r load-useful-plant-data, eval=FALSE, include=TRUE}
 
 # load the data into memory
 useful_plant_db <- data.table::fread(input="usefulplant_data/useful_plants_data_list.csv",
                                      h=TRUE,
                                      showProgress=FALSE)
-
-useful_plant_db
+# or 
+# useful_plant_db <- UsefulPlants:::usefulplants
 
 # get the list of all useful plants names in the database
-useful_plant_names <- useful_plant_db %>%
+plant_names <- useful_plant_db %>%
   dplyr::pull(binomial_acc_name) # extract binomial accepted names
 
 # optionally filter e.g. edible plants
-edible_plant_names <- useful_plant_db %>%
+plant_names <- useful_plant_db %>%
   dplyr::filter(HumanFood==1) %>%         # select edible plants
   dplyr::pull(binomial_acc_name)          
 ```
@@ -111,15 +111,15 @@ Check that your GBIF credentials are now accessible by typing in the console e.g
 library(rsdm)
 
 # make sure species names are correctly formatted 
-edible_plant_names <- gsub("_"," ",edible_plant_names)
+plant_names <- gsub("_"," ",plant_names)
 
 # specify a folder where to store the zip file of your downloads
 # it is recommended to use a specific folder for better traceability
-dwnld_dir = tempdir()
+dest_dir = tempdir()
   
 # run the query using the vector of plant species names
-gbifDATA = queryGBIF(species_name=edible_plant_names,
-                gbif_download_dir=dwnld_dir,
+gbifDATA = queryGBIF(species_name=plant_names,
+                gbif_download_dir=dest_dir,
                 # time in seconds before dropping out the connection
                 time_out = 300)
 
@@ -268,7 +268,7 @@ Check out the meaning of these arguments from the package help here
 ```{r queryBIEN, eval=FALSE, message=FALSE, include=TRUE}
 
 # run the query using the vector of plant species names previously defined in section II.2 
-bienDATA = queryBIEN(species_name=edible_plant_names)
+bienDATA = queryBIEN(species_name=plant_names)
 
 ```
 
@@ -542,7 +542,7 @@ data.table::setkey(genesysDATA, 'species')
 
 :::: {.warningbox data-latex=''}
 **Resolving species taxonomy**
-In vignette, we showed how to obtain occurrence records from a list of species names. issued from the World Checklist of Vascular Plants (WCVP) [@WCVP]. Since, plant taxonomy backbone often differ between databases, we need to make sure that 
+In vignette, we showed how to obtain occurrence records from a list of species names issued from the World Checklist of Vascular Plants (WCVP) [@WCVP]. Since, plant taxonomy backbone often differ between databases, we need to make sure that 
 ::::
 
 # References

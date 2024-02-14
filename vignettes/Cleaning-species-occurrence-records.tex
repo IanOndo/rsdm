@@ -160,7 +160,7 @@
 
 \title{Cleaning species occurrence records}
 \author{Ian Ondo}
-\date{2023-05-30}
+\date{2024-02-05}
 
 \begin{document}
 \maketitle
@@ -180,7 +180,7 @@ the codes in this vignette:
 \item
   \textbf{CoordinateCleaner} (Zizka et al. 2019)
 \item
-  \textbf{rWCVP} (Brown et al. 2023)
+  \textbf{TDWG} (Ondo 2024)
 \item
   \textbf{dplyr} (Wickham et al. 2023)
 \end{itemize}
@@ -193,52 +193,74 @@ the codes in this vignette:
 Cleaning and filtering out data that look spurious or do not fit the
 purpose of a study is probably the most important step in any data
 science project. It is generally a good idea to start your data curation
-by general filters that would exclude observations that do not fit the
-scope of your study, such as records out of their expected spatial and
-temporal range. Then, use more specific filters to refine your
-selection.
+by applying general filters that would exclude observations that do not
+fit the scope of your study, such as records out of their expected
+spatial and temporal range. Then, apply more specific filters to refine
+your selection.
 
 In this vignette, we are going to use the World Checklist of Vascular
-Plants (WCVP) (Govaerts et al. 2021) distribution data and the R package
+Plants (WCVP) (Govaerts et al. 2021) distribution data and the R
+packages
+\href{https://github.com/IanOndo/TDWG}{\textbf{\textcolor{blue}{\underline{TDWG}}}}
+and
 \href{https://cran.r-project.org/web/packages/CoordinateCleaner/CoordinateCleaner.pdf}{\textbf{\textcolor{blue}{\underline{CoordinateCleaner}}}},
 to exclude occurrence locations outside of species known range and
 common georeferencing errors.
 
-\hypertarget{cleaning-records-outside-of-species-range}{%
-\section{\texorpdfstring{\emph{Cleaning records outside of species
-range}}{Cleaning records outside of species range}}\label{cleaning-records-outside-of-species-range}}
+\hypertarget{i.-cleaning-records-outside-of-species-range-for-vascular-plants-only}{%
+\section{\texorpdfstring{I. \emph{Cleaning records outside of species
+range} (for vascular plants only
+!)}{I. Cleaning records outside of species range (for vascular plants only !)}}\label{i.-cleaning-records-outside-of-species-range-for-vascular-plants-only}}
 
-Let's assume that
+Let's assume that you loaded your occurrence records in the dataframe
+\texttt{mySpecies\_occurrences}. We are going to use the package
+\textbf{TDWG} (Ondo 2024) to filter out records sampled outside of the
+known range of your species according to the WCVP database and the World
+Geographical Scheme for Recording Plant Distributions (WGSRPD).
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(TDWG)}
 
-\NormalTok{clean0 }\OtherTok{\textless{}{-}}\NormalTok{ TDWG}\SpecialCharTok{::}\FunctionTok{rangeCleaner}\NormalTok{(mySpecies\_occurrences,}
-                   \AttributeTok{what=}\StringTok{\textquotesingle{}occurrences\textquotesingle{}}\NormalTok{,}
-                   \AttributeTok{working\_dir=}\NormalTok{OUTPUT\_DIR,}
+\CommentTok{\# check the manual help for more information about the function \textasciigrave{}coordinatesCleaner\textasciigrave{}}
+\NormalTok{clean0 }\OtherTok{\textless{}{-}}\NormalTok{ TDWG}\SpecialCharTok{::}\FunctionTok{coordinatesCleaner}\NormalTok{(}
+                  \CommentTok{\# your species occurrence dataframe}
+\NormalTok{                   mySpecies\_occurrences,}
+                   \CommentTok{\# indicate the species\_name}
+                   \AttributeTok{species\_name =} \StringTok{"Abies spectabilis"}\NormalTok{,}
+                   \CommentTok{\# indicate the establishment range you want to filter against}
+                   \CommentTok{\# both \textless{}=\textgreater{} combined native+introduced range}
                    \AttributeTok{status=}\StringTok{\textquotesingle{}both\textquotesingle{}}\NormalTok{,}
+                   \CommentTok{\# geographic level at which the filter must be applied}
                    \AttributeTok{initial\_level=}\DecValTok{2}\NormalTok{,}
+                   \CommentTok{\# do not run in parallel}
                    \AttributeTok{do.parallel=}\ConstantTok{FALSE}\NormalTok{,}
-                   \AttributeTok{use\_name\_matching=}\ConstantTok{FALSE}\NormalTok{,}
+                   \CommentTok{\# return the full dataset (i.e. all columns) with filtered occurrences}
                    \AttributeTok{full\_data =} \ConstantTok{TRUE}\NormalTok{,}
+                   \CommentTok{\# run quietly}
                    \AttributeTok{verbose=}\ConstantTok{FALSE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{cleaning-unfit-and-mis-georefenced-records}{%
-\section{\texorpdfstring{\emph{Cleaning unfit and mis-georefenced
-records}}{Cleaning unfit and mis-georefenced records}}\label{cleaning-unfit-and-mis-georefenced-records}}
+If everything runs smoothly, \texttt{clean0} should be your initial
+dataset but with the occurrence records sampled outside of your species
+range removed.
 
-We use metadata information kept from our primary downloads to exclude
-locations:
+\hypertarget{ii.-cleaning-unfit-and-mis-georefenced-records}{%
+\section{\texorpdfstring{II. \emph{Cleaning unfit and mis-georefenced
+records}}{II. Cleaning unfit and mis-georefenced records}}\label{ii.-cleaning-unfit-and-mis-georefenced-records}}
+
+We use metadata information kept from our primary downloads (see
+vignette \emph{\underline{Data gathering and pre-processing}}) to
+exclude locations:
 
 \begin{itemize}
 \tightlist
 \item
   collected before 1945
 \item
-  with coordinates out of their expected range (i.e.~with Lat
-  \notin [-90,90] and Lon \notin [-180,180])
+  with coordinates out of their expected range (i.e.~with Lat \(\notin\)
+  {[}-90,90{]} and Lon \(\notin\) {[}-180,180{]})
 \item
   with coordinates uncertainty \textless= 20km
 \item
@@ -263,6 +285,8 @@ Then, \textbf{CoordinateCleaner} to exclude locations:
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(dplyr)}
+\FunctionTok{library}\NormalTok{(CoordinateCleaner)}
 
 \CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \DocumentationTok{\#\#= 1. Remove records beyond a certain date}
@@ -329,7 +353,8 @@ Then, \textbf{CoordinateCleaner} to exclude locations:
 \CommentTok{\#=========================================================}
 \CommentTok{\# Rename lon/lat fields}
 \NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
-\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimallongitude =} \StringTok{\textquotesingle{}decimalLongitude\textquotesingle{}}\NormalTok{, }\AttributeTok{decimallatitude =} \StringTok{\textquotesingle{}decimalLatitude\textquotesingle{}}\NormalTok{)}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimallongitude =} \StringTok{\textquotesingle{}decimalLongitude\textquotesingle{}}\NormalTok{,}
+                \AttributeTok{decimallatitude =} \StringTok{\textquotesingle{}decimalLatitude\textquotesingle{}}\NormalTok{)}
 
 \CommentTok{\#{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \DocumentationTok{\#\#= 7. Clean records with 0 long and lat}
@@ -416,7 +441,8 @@ Then, \textbf{CoordinateCleaner} to exclude locations:
 \CommentTok{\#=========================================================}
 \CommentTok{\# Rename lon/lat fields}
 \NormalTok{clean }\OtherTok{\textless{}{-}}\NormalTok{ clean }\SpecialCharTok{\%\textgreater{}\%}
-\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimalLongitude =} \StringTok{\textquotesingle{}decimallongitude\textquotesingle{}}\NormalTok{, }\AttributeTok{decimalLatitude =} \StringTok{\textquotesingle{}decimallatitude\textquotesingle{}}\NormalTok{)}
+\NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{rename}\NormalTok{(}\AttributeTok{decimalLongitude =} \StringTok{\textquotesingle{}decimallongitude\textquotesingle{}}\NormalTok{,}
+                \AttributeTok{decimalLatitude =} \StringTok{\textquotesingle{}decimallatitude\textquotesingle{}}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -426,18 +452,17 @@ Then, \textbf{CoordinateCleaner} to exclude locations:
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-rwcvp}{}}%
-Brown, Matilda J. M., Barnaby E. Walker, Nicholas Black, Rafaël
-Govaerts, Ian Ondo, Robert Turner, and Eimear Nic Lughadha. 2023.
-{``rWCVP: A Companion r Package to the World Checklist of Vascular
-Plants.''} \emph{New Phytologist}.
-
 \leavevmode\vadjust pre{\hypertarget{ref-WCVP}{}}%
 Govaerts, R., E. Nic Lughadha, N. Black, R. Turner, and A. Paton. 2021.
 {``The World Checklist of Vascular Plants, a Continuously Updated
 Resource for Exploring Global Plant Diversity.''} Journal Article.
 \emph{Sci Data} 8 (1): 215.
 \url{https://doi.org/10.1038/s41597-021-00997-6}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-TDWG}{}}%
+Ondo, Ian. 2024. \emph{{TDWG}: Cleaning Occurrence Records Using the
+World Geographical Scheme for Recording Plant Distributions (WGSRPD)}.
+\url{https://github.com/IanOndo/TDWG}.
 
 \leavevmode\vadjust pre{\hypertarget{ref-dplyr}{}}%
 Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis

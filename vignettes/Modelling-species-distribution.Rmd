@@ -21,7 +21,7 @@ header-includes:
 fig_caption: yes
 keep_tex: yes
 params:
-  occ_file: system.file('extdata/Occ_dir/Abies_spectabilis.csv', package='UsefulPlants')
+  occ_file: system.file('extdata/example/Abies_spectabilis.csv', package='rsdm')
 vignette: >
   %\VignetteIndexEntry{Modelling species distribution}
   %\VignetteEngine{knitr::rmarkdown}
@@ -123,7 +123,7 @@ library(rsdm)
 my_training_area <- make_geographic_domain(
   
   # path to the occurrence records file
-  loc_dat=params$occ_file, 
+  loc_dat="<path/to/occurrence/file>", 
   
   # optional vector of longitude/latitude
   coordHeaders = c("decimalLongitude","decimalLatitude"), 
@@ -145,7 +145,7 @@ my_training_area <- make_geographic_domain(
   min_occ_number = 10,
   
   # optional terrestrial land vector maps
-  land_file = RGeodata::terrestrial_lands, 
+  #land_file = RGeodata::terrestrial_lands, 
   
   # run quietly. set to TRUE to display stepwise detailed information
   verbose=FALSE 
@@ -321,7 +321,8 @@ ctr=cont[order(cont[,1],decreasing=FALSE),]
 
 ## Representation of the contribution of each variables to an axis x
 bplt_axis_1 <- ggplot2::ggplot(data=ctr, ggplot2::aes(x=Comp, y=inertia)) +
-  ggplot2::geom_bar(stat ="identity", ggplot2::aes(fill=as.factor(inertia)), show.legend = FALSE) +
+  ggplot2::geom_bar(stat ="identity", ggplot2::aes(fill=as.factor(inertia)),
+                    show.legend = FALSE) +
   ggplot2::geom_text(ggplot2::aes(label=paste0(round(inertia,2),"%"),
                                   y=inertia+0.1, fontface='bold'),
                                   vjust=0,
@@ -401,7 +402,7 @@ bg <- fasterize::fasterize(sf::st_cast(domain,"MULTIPOLYGON"),
                            raster_template) - 1 # -1 to ensure background is a distinct block
 
 # read occurrence data
-occ_data = read.csv(params$occ_file)
+occ_data = read.csv("<path/to/csv/file>")
 
 # define the number of geographic blocks to create
 K = 3
@@ -410,7 +411,7 @@ K = 3
 my_geo_blocks = make_geographic_block(occ_data, # occurrence records data
                       k = K,                    # number of geographic blocks
                       bg = bg,                  # optional (i.e. can be left out)
-                      grid_res =grid_res,       # resolution in decimal lat/lon
+                      grid_res =grid_res,       # resolution in decimal degree lat/lon
                       sf=TRUE,                  # return a sf object
                       verbose=FALSE)            # run quietly
 
@@ -467,7 +468,7 @@ maxent_settings <- list(
 # get species coordinates (coordinates from higher taxonomic ranks or 
 # other related species can also be included)
 coords <- occ_data %>%
-  dplyr::select(c(decimalLongitude, decimalLatitude))
+  dplyr::select(decimalLongitude, decimalLatitude)
 
 # count number of points per grid cell
 rasterized_occ <- raster::rasterize(coords,

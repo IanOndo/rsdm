@@ -45,7 +45,9 @@ options("rgdal_show_exportToProj4_warnings"="none")
 **Package notes:**  
 We need to install the following set of R packages to successfully run the codes in this vignette:
 
-- **rsdm** [@data_table]
+- **UsefulPlants**[@UsefulPlants]
+- **data.table** [@data_table]
+- **raster** [@raster]
 - **terra** [@terra]
 - **ggplot2** [@ggplot2]
 - **ggpubr** [@ggpubr]
@@ -91,7 +93,7 @@ species_proba_per_cell
 
 It is a R Data Serialization (RDS) file containing a data.table object with three columns:
 
-- species: index number of the species 
+- plant_ID: indentifier number of the species 
 - proba: species occurrence probability
 - cell: raster grid cell number
 
@@ -116,9 +118,7 @@ valid.cells <- !is.na(my_species_probas[['cell']])
 rast_ref <- terra::rast(system.file("extdata","sdm_env_raster_layers.tif",
                                     package="UsefulPlants"))[[1]]
 my_species_distribution <- rast_ref
-
-# make sure to mask out the original values
-terra::values(my_species_distribution) <- NA 
+terra::values(my_species_distribution) <- NA # mask out original values
 
 # fill up raster values with corresponding estimates
 my_species_distribution[my_species_probas[['cell']][valid.cells]] <- 
@@ -176,7 +176,7 @@ get_grid_cell_prob <- function(k,ref){
 # of occurrence.
 rast_ref_file <- "<path/to/reference/raster.tif>" 
 
-# split the vector of files paths into 100 chunks for parallel processing
+# split the list of raster files by chunks of 100 files for parallel processing
 raster_split_list <- rsdm::chunk2(rast_list_files, 100)
 
 # create a vector of species names
@@ -240,11 +240,11 @@ valid.cells <- !is.na(species_richness[['cell']])
 
 # create an empty raster with 2 layers to accomodate the species richness and 
 # standard deviation estimates
-rast_ref <- raster::raster(rast_ref_file)
-predicted_species_richness <- raster::stack(rast_ref,rast_ref)
+rast_ref <- terra::rast(rast_ref_file)
+predicted_species_richness <- c(rast_ref,rast_ref)
 
 # make sure to mask out the original values
-raster::values(predicted_species_richness) <- NA 
+terra::values(predicted_species_richness) <- NA 
 
 # fill up raster values with corresponding estimates
 predicted_species_richness[[1]][species_richness[['cell']][valid.cells]] <- 
@@ -263,8 +263,7 @@ win_family_font = setNames(my_font_family,my_font_family)
 invisible(windowsFonts(win_family_font))
 
 # create a data.frame with x,y coordinates and predicted values
-m <- raster::rasterToPoints(predicted_species_richness) %>%
-  as.data.frame()
+m <- terra::as.data.frame(predicted_species_richness,xy=TRUE)
 
 # create SR plot
 srplt <- m %>%
@@ -347,7 +346,7 @@ valid.cells <- !is.na(weighted_endemism[['cell']])
 predicted_weighted_endemism <- rast_ref
 
 # make sure to mask out the original values
-raster::values(predicted_weighted_endemism) <- NA 
+terra::values(predicted_weighted_endemism) <- NA 
 
 # fill up raster values with corresponding estimates
 predicted_weighted_endemism[predicted_weighted_endemism[['cell']][valid.cells]] <- 
@@ -357,8 +356,7 @@ predicted_weighted_endemism[predicted_weighted_endemism[['cell']][valid.cells]] 
 
 ```{r code-plot-weighted-endemism, warning=FALSE, eval=FALSE, include=TRUE, fig.pos="H"}
 
-m <- raster::rasterToPoints(predicted_weighted_endemism) %>%
-  as.data.frame()
+m <- terra::as.data.frame(predicted_weighted_endemism,xy=TRUE)
 
 weplt <- m %>%
   ggplot2::ggplot() +
