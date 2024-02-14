@@ -2,7 +2,7 @@
 #'
 #'    Plot the raster map of the probability of occurrence of a species
 #'
-#' @param x A RasterLayer or stars object, or a path to the raster layer file.
+#' @param x A RasterLayer or SpatRaster object, or a path to the raster layer file.
 #' @param y An optional sf object describing spatial features to be displayed on the map: points, polygons,...etc.
 #' @param inset An optional inset map to be added to the plot. Default is `NULL`.
 #' @param outputdir A character string specifying the output directory where the map created will be stored.
@@ -15,7 +15,18 @@
 #' @param projection A character string specifying the new projection in which the raster must be reprojected. Ignored if \code{reproject=FALSE}.
 #' @param ... Additional graphic parameters
 #' @export
-map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend_title=NULL, output_format="pdf", inset_shape="rectangular", logz=FALSE, reproject=FALSE, projection="+proj=wintri", verbose=TRUE, ...){
+map_raster <- function(x,
+                       y=NULL,
+                       inset=NULL,
+                       outputdir,
+                       main_title=NULL,
+                       legend_title=NULL,
+                       output_format="pdf",
+                       inset_shape="rectangular",
+                       logz=FALSE,
+                       reproject=FALSE,
+                       projection="+proj=wintri",
+                       verbose=TRUE, ...){
 
   if(missing(x))
     stop("raster is missing.")
@@ -24,7 +35,7 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
     stop("Output directory is missing.")
 
   file_flag = tryCatch(file.exists(x), error=function(err) FALSE) && !tryCatch(dir.exists(x), error=function(err) FALSE)
-  data_flag = !file_flag & any(inherits(x, c("RasterLayer","stars")))
+  data_flag = !file_flag & any(inherits(x, c("RasterLayer","SpatRaster")))
 
   if(!file_flag & !data_flag)
     stop('Unable to read input raster. Please provide valid data')
@@ -36,13 +47,13 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
     layer_formats <- "(*.grd$)|(*.asc$)|(*.bil$)|(*.sdat$)|(*.rst$)|(*.tif$)|(*.envi$)|(*.img$)|(*hdr.adf$)"
     if(!grepl(layer_formats, basename(x)))
       stop("Incompatible raster layer format.")
-    x <- stars::read_stars(x)
+    x <- terra::rast(x)
   }else{
     if(inherits(x,"RasterLayer"))
-      x %<>% stars::st_as_stars()
+      x %<>% terra::rast()
   }
 
-  if(is.na(st_is_longlat(x)))
+  if(is.na(sf::st_is_longlat(x)))
      stop("x has no valid Coordinate Reference System.")
 
   feature_type = 0
@@ -70,7 +81,9 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
 
 
   if(reproject){
-    if(sf::st_is_longlat(x) & !tryCatch(sf::st_is_longlat(projection),error=function(err) FALSE)){
+
+    if(sf::st_is_longlat(x) & !tryCatch(sf::st_is_longlat(projection),
+                                        error=function(err) FALSE)){
       if(verbose) cat(">...[reprojecting raster]...\n")
 
       # save raster name
@@ -79,10 +92,9 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
       if(pmatch("+proj=wintri", projection, nomatch=0)>0){
 
         if(inherits(try(x %<>% lwgeom::st_transform_proj(projection),silent=TRUE),"try-error"))
-          x %<>% as("Raster") %>%
-          raster::projectRaster(crs=sp::CRS(projection)) %>%
-          stars::st_as_stars() %>%
-          sf::st_set_crs(NA)
+          x %<>%
+          terra::project(projection) %>%
+          `crs<-`(NA)
 
           if(!is.null(y))
             y %<>% lwgeom::st_transform_proj(projection)
@@ -93,7 +105,7 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
           lwgeom::st_transform_proj(projection)
       }else{
         x %<>%
-          sf::st_transform(projection)
+          terra::project(projection)
         if(!is.null(y))
           y %<>% sf::st_transform(projection)
         if(!is.null(inset))
@@ -102,9 +114,11 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
         worldbackground_reproj <- RGeodata::terrestrial_lands %>%
           lwgeom::st_transform_proj(projection)
       }
-    }else if(!sf::st_is_longlat(x) & !tryCatch(sf::st_is_longlat(projection),error=function(err) FALSE)){
+    }
+    else if(!sf::st_is_longlat(x) & !tryCatch(sf::st_is_longlat(projection),
+                                              error=function(err) FALSE)){
       x %<>%
-        sf::st_transform(projection)
+        terra::project(projection)
       if(!is.null(y))
         y %<>% sf::st_transform(projection)
       if(!is.null(inset))
@@ -168,8 +182,11 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
 
   if(verbose) cat(">...[setting raster values format]...\n")
   # get raster values in matrix format
-  z <- raster::as.matrix(raster::flip(raster::raster(x[[1]]),direction="x"))
-  zlevels<- pretty(range(z,finite=TRUE), n=40)
+  #z <- terra::as.matrix(terra::flip(x), wide=TRUE)
+  rotateRaster <- function(x) terra::flip(terra::trans(x), direction="vertical")
+  # Very very UGLY !! TODO: Change this ASAP !
+  z <- matrix(terra::values(rotateRaster(x)), nrow(x), ncol(x)) %>% t() %>% apply(1,rev) %>% t() %>% apply(2,rev)
+  zlevels <- pretty(range(z,finite=TRUE), n=40)
 
   if(verbose) cat(">...[setting map area]...\n")
   # set up plot area
@@ -177,9 +194,14 @@ map_raster <- function(x, y=NULL, inset=NULL, outputdir, main_title=NULL, legend
   offset <- if(reproject) 110000 else 1
   brd_bboxx <- sf::st_bbox(c(bboxx["xmin"]-offset, bboxx["xmax"]+offset, bboxx["ymin"]-offset, bboxx["ymax"]+offset))
   if(reproject)
-    brd <- suppressWarnings(suppressMessages(sf::st_intersection(worldbackground_reproj,
-                                                                 st_rectangle(brd_bboxx, tolerance=0) %>% sf::st_set_crs(sf::st_crs(worldbackground_reproj)))))
-  else brd <- suppressWarnings(suppressMessages(sf::st_intersection(RGeodata::terrestrial_lands, st_rectangle(brd_bboxx, tolerance=0))))
+    brd <- sf::st_intersection(worldbackground_reproj,
+                               st_rectangle(brd_bboxx, tolerance=0) %>% sf::st_set_crs(sf::st_crs(worldbackground_reproj))) %>%
+    suppressMessages() %>%
+    suppressWarnings()
+  else brd <- sf::st_intersection(RGeodata::terrestrial_lands,
+                                  st_rectangle(brd_bboxx, tolerance=0) %>% sf::st_set_crs(sf::st_crs(RGeodata::terrestrial_lands))) %>%
+    suppressMessages() %>%
+    suppressWarnings()
 
   if(verbose) cat(">...[mapping]...\n")
   if(is.null(main_title))
