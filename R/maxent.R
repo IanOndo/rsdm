@@ -28,16 +28,16 @@ maxent <- function(sp_points, env_layers, outputdir, path_to_maxent=NULL, path_t
     }
   }
   # check if the maxent file .jar exists
-  maxent_jar <- paste(system.file(package="dismo"),"/java/maxent.jar", sep='')
-  if(!file.exists(maxent_jar)){
-    if(is.null(path_to_maxent)){
+  maxent_jar <- path_to_maxent
+  if(is.null(path_to_maxent)){
+    maxent_jar <- system.file("java","maxent.jar",package="dismo")
+    if(!file.exists(maxent_jar)){
       stop('- MAXENT jar file has not been found on your computer -\n - You must provide a path to your maxent program')
     }
-    else{
-      if(!file.exists(path_to_maxent))
-        stop(paste('File:',path_to_maxent,'does not exist or is not accessible'))
-      maxent_jar = path_to_maxent
-    }
+  }else{
+    if(!file.exists(path_to_maxent))
+      stop(paste('File:',path_to_maxent,'does not exist or is not accessible'))
+    maxent_jar = path_to_maxent
   }
   main_cmd = paste(java_interpreter,paste0('-mx',memory_allocated,'m'),'-jar', paste0('"',maxent_jar,'"'),'-a -r','-e',env_layers,'-s', sp_points,'-o',outputdir)
 
