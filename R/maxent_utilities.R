@@ -135,7 +135,6 @@ List2MaxEntCommand <- function(argList){
 #' @export
 get_maxent_output <- function(maxent_outputdir, eval_metrics=c("auc", "omission_rate","tss"), index=1){
 
-  Require("magrittr")
   # get evaluation data
   samplePredictions     <- read.csv(list.files(maxent_outputdir,pattern=".+samplePredictions.csv$",full.names=TRUE),h=TRUE)
   backgroundPredictions <- read.csv(list.files(maxent_outputdir,pattern=".+backgroundPredictions.csv$",full.names=TRUE),h=TRUE)
