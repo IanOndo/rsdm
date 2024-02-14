@@ -2,14 +2,25 @@
 #'
 #' Uses masked geographically structured cross-validation method for evaluating and selecting a maxent model
 #'
-#' @param loc_dat A character string specifying the path to a csv file with longitude and latitude coordinates of occurrence records.
-#' @param outputdir A character string specifying the directory where to save the raster of interpolated values.
-#' @param newdata A character string specifying the directory where the new environmental raster layers for projection are stored.
-#' Default is `NULL` i.e. projection will use environmental layers provided for calibration.
+#' @param loc_dat A two-column data.frame or matrix, or a path to a csv file with longitude and latitude coordinates of occurrence records.
+#' @param envir_dir A path to a directory with the environmental raster layers.
+#' @param outputdir A path to a directory where to save the outputs of the species distribution model.
+#' @param newdata A character string specifying the directory with the new environmental raster layers for projection. Default is `NULL` i.e. projection will use environmental layers provided for calibration.
+#' @param maxent_settings A list of Maxent flags.
+#' @param do.map A logical. Should the species distribution be mapped ?  default is `FALSE`.
+#' @param do.extrapolation.map A logical. Should extrapolation uncertainty be mapped ? default is `TRUE`.
+#' @param do.mic.map A logical. Should the spatially distributed most influential covariate (mic) be mapped ? default is `FALSE`.
 #' @param ... Additional parameters to be passed to \code{block_cv_maxent} or \code{make_geographic_block}
 #' @return An integer number. `0` in case of success otherwise return `-1`
 #' @export
-run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL, verbose=TRUE, maxent_settings=list(), do.map=FALSE, ...){
+run_maxentModel <- function(loc_dat,
+                            envir_dir=NULL,
+                            species_name=NULL,
+                            outputdir,
+                            newdata=NULL,
+                            verbose=TRUE,
+                            maxent_settings=list(),
+                            do.map=FALSE, ...){
 
   if(missing(loc_dat))
     stop("Occurrence date are missing.")
@@ -18,7 +29,7 @@ run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL,
     stop("Output directory is missing.")
 
   loc_file_flag = tryCatch(file.exists(loc_dat), error=function(err) FALSE) && !tryCatch(dir.exists(loc_dat), error=function(err) FALSE)
-  loc_data_flag = !loc_file_flag & any(inherits(loc_dat, c("data.frame","matrix")))
+  loc_data_flag = !loc_file_flag & inherits(loc_dat, c("data.frame","matrix"))
 
   if(!loc_file_flag & !loc_data_flag)
     stop('Unable to read location data. Please provide valid location data')
@@ -38,7 +49,9 @@ run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL,
       species_name=paste0("Unknown_", gsub(" ","_",Sys.time()))
   }
 
-  list_train_args <- list(loc_dat=loc_dat, species_name=species_name, outputdir=outputdir)
+  list_train_args <- list(loc_dat=loc_dat,
+                          species_name=species_name,
+                          outputdir=outputdir)
 
   extra_args <- list(...)
   if(length(extra_args)>0L){
@@ -49,17 +62,29 @@ run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL,
     if(length(extra_maxent_args)>0L)
       list_train_args <- append(list_train_args, extra_maxent_args)
 
-    # check for background arguments
+    # check for training area arguments
     bg_args <- extra_args[arg.names %in% c("land_file","do.alpha_hull","dissolve", "min_area_cover","grid_res", "coastline", "method")]
     if(length(bg_args)>0L)
       list_train_args <- append(list_train_args, bg_args)
   }
+
   env_dn <- file.path(outputdir,"modelsVariables")
-  if(!dir.exists(env_dn))
-    stop("Unable to locate directory: ", env_dn)
+  if(!dir.exists(env_dn)) dir.create(env_dn,recursive=TRUE)
+
+  if(inherits(try(read_layers(env_dn),silent=TRUE),"try-error")){
+    if(is.null(envir_dir)){
+      #unlink(env_dn,recursive=TRUE)
+      stop("Please provide a directory with predictor raster layers")
+    }
+    rlyr <- read_layers(envir_dir)
+    terra::writeRaster(rlyr,
+                       file.path(env_dn,paste0(names(rlyr),".tif")),
+                       overwrite=TRUE)
+  }
 
   list_train_args[['env_dat']] <- env_dn
-  list_train_args <- append(list_train_args, list(maxent_settings=maxent_settings))
+  list_train_args <- append(list_train_args,
+                            list(maxent_settings=maxent_settings, verbose=verbose))
 
   if(verbose){
     cat(">> [[ environmentalModel: Maxent ]] <<\n\n")
@@ -75,177 +100,163 @@ run_maxentModel <- function(loc_dat, species_name=NULL, outputdir, newdata=NULL,
     if(verbose) cat("> ...[Projecting]...");flush.console()
     domain<- try(readRDS(file.path(outputdir,"modelsBackground",paste0(species_name,".rds"))),silent=TRUE)
     if(inherits(domain,"try-error")){
-      cat(domain)
-      stop("Unable to read background data. See error.")
+      message(domain)
+      stop("Unable to load the training area dataset. See error.")
     }
     out_proj_dn <- file.path(outputdir,"modelsProjectedDomain")
     if(!dir.exists(out_proj_dn)) dir.create(out_proj_dn, recursive=TRUE)
-    projection_domain <- make_projection_domain(domain, output_name=species_name, output_dir=out_proj_dn, verbose=FALSE)
+    projection_domain <- make_projection_domain(domain,
+                                                output_name=species_name,
+                                                output_dir=out_proj_dn,
+                                                verbose=verbose)
 
     if(is.null(projection_domain)){
       # try using biomes
-      projection_domain <- make_projection_domain(domain, output_name=species_name, output_dir=out_proj_dn, use_ecoregions=FALSE, verbose=FALSE)
+      projection_domain <- make_projection_domain(domain,
+                                                  output_name=species_name,
+                                                  output_dir=out_proj_dn,
+                                                  use_ecoregions=FALSE,
+                                                  verbose=verbose)
     }
     if(is.null(projection_domain) || inherits(projection_domain,"try-error")){
-      cat(projection_domain)
-      stop("Unable to create projection background. See error")
+      message(projection_domain)
+      stop("Unable to create a projection area. See error")
     }
+
+    projection_domain <- terra::vect(projection_domain)
+
     # prepare new environmental variables
     if(!is.null(newdata) && dir.exists(newdata))
       env_dn <- newdata
 
-    env_bg0 <- try(env_dn %>%
-                    read_layers(),silent=TRUE)
+    env_bg0 <- try(read_layers(env_dn),silent=TRUE)
 
     if(inherits(env_bg0,"try-error")){
-      cat(env_bg0)
+      message(env_bg0)
       stop("Unable to read environmental raster layers.")
     }
 
     newdata <-try({
-
-      names(env_bg0) <- if(any(is.na(strip_extension(names(env_bg0)))))  names(env_bg0) else strip_extension(names(env_bg0))
-
-      if(inherits(env_bg0,"stars")){
-
-        # collapse attributes
-        if(length(stars::st_dimensions(env_bg0))<3)
-          env_bg0 %<>%
-          merge() %>%
-          stars::st_set_dimensions(3, values = names(env_bg0)) %>%
-          stars::st_set_dimensions(names = c("x", "y", "band"))
-
-        newdata_stars <- suppressMessages( env_bg0 %>%
-                                             as("Raster") %>%
-                                             raster::stack() %>%
-                                             raster::crop(y=as(projection_domain,"Spatial")) %>%
-                                             stars::st_as_stars()) # `[`(projection_domain))
-
-        st_dim <- attr(newdata_stars,"dimension")
-        # ugly work-around when crop returns crap
-        if(st_dim$x$from==st_dim$x$to | st_dim$y$from==st_dim$y$to){
-
-          env.prj <- as(newdata_stars,"Raster") %>%
-            raster::crop(y=as(projection_domain,"Spatial")) %>%
-            setNames(stars::st_dimensions(env_bg0)$band$values)
-
-          prj.dom0 <- projection_domain %>%
-            as("Spatial") %>%
-            raster::rasterize(env.prj, getCover=TRUE)
-          prj.dom0[prj.dom0==0] <- NA
-
-          newdata_stars <- env.prj %>%
-            raster::mask(mask=prj.dom0) %>%
-            raster::stack() # %>%
-            #stars::st_as_stars()
-          # newdata_stars <- 1:length(newdata_stars) %>%
-          #   lapply(function(l){
-          #            env.prj <- as(newdata_stars[l],"Raster") %>%
-          #              raster::crop(y=as(projection_domain,"Spatial"))
-          #
-          #            prj.dom0 <- projection_domain %>%
-          #              as("Spatial") %>%
-          #              raster::rasterize(env.prj, getCover=TRUE)
-          #            prj.dom0[prj.dom0==0] <- NA
-          #
-          #            env.prj %>%
-          #            raster::mask(mask=prj.dom0) %>%
-          #            stars::st_as_stars()
-          #          }
-          #     ) %>%
-          #   do.call(c,.) %>%
-          #   setNames(names(env_bg))
-        }else{
-          # create a mask with cells that covers the training block
-          prj.dom0 <- projection_domain %>%
-            as("Spatial") %>%
-            raster::rasterize(as(newdata_stars,"Raster"), getCover=TRUE)
-          prj.dom0[prj.dom0==0] <- NA
-
-          newdata_stars %>%
-            as("Raster") %>%
-            setNames(stars::st_dimensions(env_bg0)$band$values) %>%
-            raster::mask(mask=prj.dom0)
-        }
-
-        # n_layers <- length(newdata_stars)
-        #
-        # 1:n_layers %>%
-        #   as.list() %>%
-        #   purrr::map(function(x) as(`[`(newdata_stars,x), "Raster")) %>%
-        #   raster::stack()
-
-      }else{
-
-          # set environmental layers extent to projection domain extent
-          env_bg <- env_bg0 %>%
-            raster::crop(y=as(projection_domain,"Spatial"))
-
-          # create a mask with cells that covers the projection domain
-          prj.dom0 <- projection_domain %>%
-            as("Spatial") %>%
-            raster::rasterize(env_bg, getCover=TRUE)
-          prj.dom0[prj.dom0==0] <- NA
-
-          env_bg %>%
-          raster::mask(mask=prj.dom0) %>%
-          raster::stack()
-      }
-
+      names(env_bg0) <- if(anyNA(strip_extension(names(env_bg0))))  names(env_bg0) else strip_extension(names(env_bg0))
+      env_bg <- terra::crop(env_bg0, projection_domain)
+      # create a mask with cells that covers the training block
+      prj.dom0 <- terra::rasterize(projection_domain, env_bg, cover=TRUE)
+      prj.dom0[prj.dom0==0] <- NA
+      terra::mask(env_bg, mask=prj.dom0)
     }, silent=TRUE)
 
     if(inherits(newdata,"try-error")){
-      cat(newdata)
+      message(newdata)
       stop("Unable to create newdata layers for projection. See error.")
     }
 
-    names(newdata) <- stars::st_dimensions(env_bg0)$band$values
-
     out_pred_dn <- file.path(outputdir,"modelsPredictions")
     if(!dir.exists(out_pred_dn)) dir.create(out_pred_dn, recursive=TRUE)
-    projected_model <- try(project_maxent(lambdas=trained_model, newdata=newdata, quiet=TRUE), silent=TRUE)
+    projected_model <- try(project_maxent(lambdas=trained_model,
+                                          newdata=raster::stack(newdata),
+                                          quiet=TRUE),
+                           silent=TRUE)
 
     if(!inherits(projected_model, "try-error")){
       if(verbose){
         cat("OK\n");flush.console()
         cat(">...[writing projection]...\n")
       }
-      raster::writeRaster(projected_model$prediction_cloglog, file.path(out_pred_dn,paste0(species_name,".tif")), format="GTiff", overwrite=TRUE)
+      terra::writeRaster(terra::rast(projected_model$prediction_cloglog),
+                          file.path(out_pred_dn,paste0(species_name,".tif")),
+                          overwrite=TRUE)
 
       if(do.map){
+
         if(verbose) cat(">...[mapping projection]...\n")
         out_map_dn <- file.path(outputdir,"modelsMaps")
         if(!dir.exists(out_map_dn)) dir.create(out_map_dn, recursive=TRUE)
 
         if(loc_file_flag){
           loc_dat = read.csv(loc_dat, header=TRUE)
-          id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|[Xx]",x = names(loc_dat), value=TRUE)[1]
-          id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|[Yy]",x = names(loc_dat), value=TRUE)[1]
-          coordHeaders <- c(id_x_lon, id_y_lat)
-          loc_dat %<>%
-            dplyr::rename(X=coordHeaders[1], Y=coordHeaders[2]) %>%
-            sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs('+proj=longlat +datum=WGS84'))
         }
+
+        id_x_lon 	<- grep(pattern = "[Ll][Oo][Nn]|^[Xx]$",x = names(loc_dat), value=TRUE)[1]
+        id_y_lat 	<- grep(pattern = "[Ll][Aa][Tt]|^[Yy]$",x = names(loc_dat), value=TRUE)[1]
+        coordHeaders <- c(id_x_lon, id_y_lat)
+        loc_dat %<>%
+          dplyr::rename(X=coordHeaders[1], Y=coordHeaders[2]) %>%
+          sf::st_as_sf(., coords=c("X","Y"), crs=sf::st_crs(4326))
+
         geo_code <- TDWG::get_geocode(gsub("_", " ", species_name), level=2)
         if(is.null(geo_code))
           inset=NULL
         else
           inset <- TDWG:::tdwg_level2 %>%
-          sf::st_as_sf() %>%
           dplyr::filter(LEVEL2_COD %in% geo_code)
 
-        map_raster(x=setNames(projected_model$prediction_cloglog, species_name), y=loc_dat, inset=inset, inset_shape="circular", outputdir=out_map_dn, verbose=FALSE)
+        map_raster(x=setNames(projected_model$prediction_cloglog, species_name),
+                   y=loc_dat,
+                   inset=inset,
+                   inset_shape="circular",
+                   outputdir=out_map_dn,
+                   verbose=verbose)
       }
+
+
+      if(do.extrapolation.map | do.mic.map){
+        olddata <-try({
+          names(env_bg0) <- if(anyNA(strip_extension(names(env_bg0))))  names(env_bg0) else strip_extension(names(env_bg0))
+          env_bg <- terra::crop(env_bg0, domain)
+          # create a mask with cells that covers the training block
+          dom0 <- terra::rasterize(domain, env_bg, cover=TRUE)
+          dom0[dom0==0] <- NA
+          terra::mask(env_bg, mask=dom0)
+        }, silent=TRUE)
+        do.extra.maps <- !inherits(olddata,"try-error")
+      }
+
+      if(!do.extra.maps){
+        message(olddata)
+        warning("An error occured while processing the training dataset. Unable to create extrapolation uncertainty layers for projection. See error.")
+      }
+
+      if(do.extra.maps && do.extrapolation.map){
+        if(verbose) cat(">...[writing extrapolation uncertainty map]...\n")
+        trg <- raster::brick(newdata)
+        ref <- raster::brick(olddata)
+        extrap_map  <- try(exdet(trg,ref,compute_mic = do.mic.map),silent=TRUE)
+        if(inherits(extrap_map,"try-error")) stop(extra_map)
+        out_dirs <- c("modelsPredictionsUncertainty","modelsMIC")[c(do.extrapolation.map,do.mic.map)]
+        out_predu_dn <- file.path(outputdir,out_dirs)
+        if(any(!dir.exists(out_predu_dn))) sapply(out_predu_dn, dir.create, recursive=TRUE)
+
+        for(k in 1:length(out_predu_dn)){
+          terra::writeRaster(terra::rast(extrap_map[[k]]),
+                             file.path(out_predu_dn[k],paste0(species_name,".tif")),
+                             overwrite=TRUE)
+        }
+
+      }else if(do.extra.maps && do.mic.map){
+        if(verbose) cat(">...[writing most influential covariate map]...\n")
+        trg <- raster::brick(newdata)
+        ref <- raster::brick(olddata)
+        mic_map <- micdet(trg,ref)
+        if(inherits(mic_map,"try-error")) stop(mic_map)
+
+        out_mic_dn <- file.path(outputdir,"modelsMIC")
+        if(!dir.exists(out_mic_dn)) dir.create(out_mic_dn, recursive=TRUE)
+
+        terra::writeRaster(terra::rast(mic_map),
+                           file.path(out_mic_dn,paste0(species_name,".tif")),
+                           overwrite=TRUE)
+      }
+
       if(verbose) cat(">>[[COMPLETED]]<<\n\n");flush.console()
       return(0)
     }else{
-      if(verbose) cat(projected_model);flush.console()
+      if(verbose) message(projected_model)
       if(verbose) cat("FAILED\n");flush.console()
       if(verbose) cat(">>[[FAILURE]]<<\n\n");flush.console()
       return(-1)
     }
   }else{
-    cat(trained_model)
+    message(trained_model)
     stop("Model training failed. See errors.")
   }
 
@@ -322,8 +333,11 @@ run_geoModel <- function(loc_dat, species_name=NULL, algorithm="idw", outputdir,
     bg_domain <- readRDS(out_bg_fn)
     bg_domain %<>%
       sf::st_buffer(project_res)
-    r  <- tryCatch(raster::raster(bg_domain , res = train_res), error=function(err) raster::raster(as(bg_domain,"Spatial"), res = train_res))
-    projected_domain <- suppressMessages(fasterize::fasterize(sf::st_cast(bg_domain,"MULTIPOLYGON"), r, fun="count"))
+    r  <- try(terra::raster(bg_domain , res = train_res),silent=TRUE)
+    if(inherits(r,"try-error")) {message(r); stop("Cannot create raster from the training area")}
+    projected_domain <- suppressMessages(fasterize::fasterize(sf::st_cast(bg_domain,"MULTIPOLYGON"),
+                                                              r,
+                                                              fun="count"))
     #r <- raster::raster(bg_domain, res = train_res)
     #projected_domain <- fasterize::fasterize(sf::st_cast(bg_domain,"MULTIPOLYGON"), r, fun="count")
 
@@ -349,7 +363,7 @@ run_geoModel <- function(loc_dat, species_name=NULL, algorithm="idw", outputdir,
       if(verbose){
         cat("FAILED\n\n");flush.console()
         cat(sprintf(">>[[FAILURE]]<<\n\n"));flush.console()
-        cat(projected_model);flush.console()
+        message(projected_model)
       }
       return(-1)
     }
@@ -357,7 +371,7 @@ run_geoModel <- function(loc_dat, species_name=NULL, algorithm="idw", outputdir,
   if(verbose){
     cat("FAILED\n\n");flush.console()
     cat(sprintf(">>[[FAILURE]]<<\n\n"));flush.console()
-    cat(eval_trained_model);flush.console()
+    message(eval_trained_model)
   }
 
   return(-1)
