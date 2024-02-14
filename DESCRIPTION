@@ -8,19 +8,17 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
-Imports: 
-    ROCR,
+Imports:
     magrittr,
+    ROCR,
     dismo,
     spatialrisk,
     rgbif,
     BIEN,
-    stars,
     lwgeom,
     taxize,
     CoordinateCleaner,
-    Rcpp,
-    doParallel
+    data.table
 RoxygenNote: 7.2.3
 Depends:
     AlphaHullRangeModeller,
