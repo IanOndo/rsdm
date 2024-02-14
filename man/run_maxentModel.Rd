@@ -6,6 +6,7 @@
 \usage{
 run_maxentModel(
   loc_dat,
+  envir_dir = NULL,
   species_name = NULL,
   outputdir,
   newdata = NULL,
@@ -16,14 +17,21 @@ run_maxentModel(
 )
 }
 \arguments{
-\item{loc_dat}{A character string specifying the path to a csv file with longitude and latitude coordinates of occurrence records.}
+\item{loc_dat}{A two-column data.frame or matrix, or a path to a csv file with longitude and latitude coordinates of occurrence records.}
 
-\item{outputdir}{A character string specifying the directory where to save the raster of interpolated values.}
+\item{envir_dir}{A path to a directory with the environmental raster layers.}
 
-\item{newdata}{A character string specifying the directory where the new environmental raster layers for projection are stored.
-Default is `NULL` i.e. projection will use environmental layers provided for calibration.}
+\item{outputdir}{A path to a directory where to save the outputs of the species distribution model.}
+
+\item{newdata}{A character string specifying the directory with the new environmental raster layers for projection. Default is `NULL` i.e. projection will use environmental layers provided for calibration.}
+
+\item{maxent_settings}{A list of Maxent flags.}
+
+\item{do.map}{A logical. Should the species distribution be mapped ?  default is `FALSE`.}
 
 \item{...}{Additional parameters to be passed to \code{block_cv_maxent} or \code{make_geographic_block}}
+
+\item{do.extrapolation.map}{A logical. Should extrapolation uncertainty be mapped ? default is `TRUE`.}
 }
 \value{
 An integer number. `0` in case of success otherwise return `-1`

@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_evaluation.R
 \name{get_best_maxent_model}
 \alias{get_best_maxent_model}
-\title{utility function: selects the best model based off a set of evaluation metrics.}
+\title{utility function: selects the best model based on a set of evaluation metrics.}
 \usage{
 get_best_maxent_model(model_output, eval_metrics, tolerance = 3)
 }
@@ -14,5 +14,5 @@ get_best_maxent_model(model_output, eval_metrics, tolerance = 3)
 \item{tolerance}{A numeric integer specifying the number of decimals to account for when comparing performance metrics. Default is 3 digits.}
 }
 \description{
-utility function: selects the best model based off a set of evaluation metrics.
+utility function: selects the best model based on a set of evaluation metrics.
 }
